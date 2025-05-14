@@ -157,7 +157,10 @@ public class AllowanceServiceImpl implements AllowanceService {
     }
 
     private AllowanceDto saveAndReturn(Allowance allowance) {
-        return allowanceMapper.toDto(allowanceRepository.save(allowance));
+        Allowance save = allowanceRepository.save(allowance);
+        return AllowanceDto.builder()
+                .id(save.getId())
+                .build();
     }
 
 }

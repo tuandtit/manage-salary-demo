@@ -80,7 +80,10 @@ public class GroupAllowanceServiceImpl implements GroupAllowanceService {
     }
 
     private GroupAllowanceDto saveAndReturn(GroupAllowance groupAllowance) {
-        return groupAllowanceMapper.toDto(groupAllowanceRepository.save(groupAllowance));
+        GroupAllowance save = groupAllowanceRepository.save(groupAllowance);
+        return GroupAllowanceDto.builder()
+                .id(save.getId())
+                .build();
     }
 
     private GroupAllowance existsGroupAllowance(Long id) {
