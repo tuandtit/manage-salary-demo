@@ -8,8 +8,8 @@ import com.apus.manage_salary_demo.common.error.BusinessException;
 import com.apus.manage_salary_demo.common.utils.ConvertUtils;
 import com.apus.manage_salary_demo.dto.AllowanceDto;
 import com.apus.manage_salary_demo.dto.request.search.AllowanceSearchRequest;
-import com.apus.manage_salary_demo.entity.Allowance;
-import com.apus.manage_salary_demo.entity.GroupAllowance;
+import com.apus.manage_salary_demo.entity.AllowanceEntity;
+import com.apus.manage_salary_demo.entity.GroupAllowanceEntity;
 import com.apus.manage_salary_demo.mapper.AllowanceMapper;
 import com.apus.manage_salary_demo.repository.AllowanceRepository;
 import com.apus.manage_salary_demo.repository.GroupAllowanceRepository;
@@ -44,11 +44,11 @@ public class AllowanceServiceImpl implements AllowanceService {
     @Override
     public AllowanceDto create(AllowanceDto dto) {
         validateDuplicateCode(dto.getCode());
-        Allowance allowance = allowanceMapper.toEntity(dto);
+        AllowanceEntity allowanceEntity = allowanceMapper.toEntity(dto);
         Long groupAllowanceId = dto.getGroupAllowance().getId();
         if (groupAllowanceId != null)
-            allowance.setGroupAllowance(existsGroupAllowance(groupAllowanceId));
-        return saveAndReturn(allowance);
+            allowanceEntity.setGroupAllowanceEntity(existsGroupAllowance(groupAllowanceId));
+        return saveAndReturn(allowanceEntity);
     }
 
     @Override
@@ -57,15 +57,15 @@ public class AllowanceServiceImpl implements AllowanceService {
             throw new BusinessException("400", "id must be not null");
         }
 
-        Allowance entity = existsAllowance(dto.getId());
+        AllowanceEntity entity = existsAllowance(dto.getId());
 
         if (!dto.getCode().equals(entity.getCode()))
             validateDuplicateCode(dto.getCode());
         allowanceMapper.update(dto, entity);
 
         if (dto.getGroupAllowance() != null && dto.getGroupAllowance().getId() != null) {
-            GroupAllowance parent = existsGroupAllowance(dto.getGroupAllowance().getId());
-            entity.setGroupAllowance(parent);
+            GroupAllowanceEntity parent = existsGroupAllowance(dto.getGroupAllowance().getId());
+            entity.setGroupAllowanceEntity(parent);
         }
 
         return saveAndReturn(entity);
@@ -78,7 +78,7 @@ public class AllowanceServiceImpl implements AllowanceService {
 
     @Override
     public AllowanceDto getById(Long id) {
-        Allowance entity = existsAllowance(id);
+        AllowanceEntity entity = existsAllowance(id);
         AllowanceDto response = allowanceMapper.toDto(entity);
         response.setUom(uomClient.getUomById(entity.getUomId()).getData());
         response.setCurrency(currencyClient.getCurrencyById(entity.getCurrencyId()).getData());
@@ -87,23 +87,30 @@ public class AllowanceServiceImpl implements AllowanceService {
 
     @Override
     public Page<AllowanceDto> getAll(AllowanceSearchRequest request) {
-        Page<Allowance> page = allowanceRepository.findAll(request.specification(), request.pageable());
+        Page<AllowanceEntity> page = allowanceRepository.findAll(request.specification(), request.pageable());
 
         if (page.isEmpty()) {
             return new PageImpl<>(Collections.emptyList(), page.getPageable(), page.getTotalElements());
         }
 
-        Set<Long> uomIds = page.stream()
-                .map(Allowance::getUomId)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
+        Set<Long> uomIds = new HashSet<>();
+        for (AllowanceEntity allowanceEntity : page.getContent()) {
+            Long uomId = allowanceEntity.getUomId();
+            if (uomId != null) {
+                uomIds.add(uomId);
+            }
+        }
+
 
         Map<Long, UomDto> uomMap = buildUomMap(uomIds);
 
-        Set<Long> currencyIds = page.stream()
-                .map(Allowance::getCurrencyId)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
+        Set<Long> currencyIds = new HashSet<>();
+        for (AllowanceEntity allowanceEntity : page.getContent()) {
+            Long currencyId = allowanceEntity.getCurrencyId();
+            if (currencyId != null) {
+                currencyIds.add(currencyId);
+            }
+        }
 
         Map<Long, CurrencyDto> currencyMap = buildCurrencyMap(currencyIds);
 
@@ -146,18 +153,18 @@ public class AllowanceServiceImpl implements AllowanceService {
         }
     }
 
-    private Allowance existsAllowance(Long id) {
+    private AllowanceEntity existsAllowance(Long id) {
         return allowanceRepository.findById(id)
                 .orElseThrow(() -> new BusinessException("404", "Allowance not found with id: " + id));
     }
 
-    private GroupAllowance existsGroupAllowance(Long id) {
+    private GroupAllowanceEntity existsGroupAllowance(Long id) {
         return groupAllowanceRepository.findById(id)
                 .orElseThrow(() -> new BusinessException("404", "groupAllowance not found with id: " + id));
     }
 
-    private AllowanceDto saveAndReturn(Allowance allowance) {
-        Allowance save = allowanceRepository.save(allowance);
+    private AllowanceDto saveAndReturn(AllowanceEntity allowanceEntity) {
+        AllowanceEntity save = allowanceRepository.save(allowanceEntity);
         return AllowanceDto.builder()
                 .id(save.getId())
                 .build();

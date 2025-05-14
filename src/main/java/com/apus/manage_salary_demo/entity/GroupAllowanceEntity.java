@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class GroupAllowance extends AbstractAuditingEntity<Long> {
+public class GroupAllowanceEntity extends AbstractAuditingEntity<Long> {
 
     @Column(nullable = false, unique = true, length = 20)
     private String code;
@@ -22,7 +22,7 @@ public class GroupAllowance extends AbstractAuditingEntity<Long> {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
-    private GroupAllowance parent;
+    private GroupAllowanceEntity parent;
 
     @Column(columnDefinition = "text")
     private String description;
@@ -30,6 +30,6 @@ public class GroupAllowance extends AbstractAuditingEntity<Long> {
     @Column(name = "is_active", nullable = false)
     private Boolean isActive;
 
-    @OneToMany(mappedBy = "groupAllowance")
-    private List<Allowance> allowances;
+    @OneToMany(mappedBy = "groupAllowanceEntity")
+    private List<AllowanceEntity> allowanceEntities;
 }

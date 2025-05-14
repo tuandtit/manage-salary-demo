@@ -14,7 +14,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RewardPolicy extends AbstractAuditingEntity<Long> {
+public class RewardPolicyEntity extends AbstractAuditingEntity<Long> {
 
     @Column(length = 20, nullable = false, unique = true)
     private String code;

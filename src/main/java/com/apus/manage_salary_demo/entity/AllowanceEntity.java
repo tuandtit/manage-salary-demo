@@ -11,7 +11,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Allowance extends AbstractAuditingEntity<Long> {
+public class AllowanceEntity extends AbstractAuditingEntity<Long> {
 
     @Column(nullable = false, unique = true, length = 20)
     private String code;
@@ -34,7 +34,7 @@ public class Allowance extends AbstractAuditingEntity<Long> {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_allowance_id", nullable = false)
-    private GroupAllowance groupAllowance;
+    private GroupAllowanceEntity groupAllowanceEntity;
 
     @Column(columnDefinition = "text")
     private String description;

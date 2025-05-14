@@ -10,7 +10,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class GroupReward extends AbstractAuditingEntity<Long> {
+public class GroupRewardEntity extends AbstractAuditingEntity<Long> {
 
     @Column(length = 20, nullable = false, unique = true)
     private String code;
@@ -20,7 +20,7 @@ public class GroupReward extends AbstractAuditingEntity<Long> {
 
     @ManyToOne
     @JoinColumn(name = "parent_id")
-    private GroupReward parent;
+    private GroupRewardEntity parent;
 
     @Column(columnDefinition = "text")
     private String description;

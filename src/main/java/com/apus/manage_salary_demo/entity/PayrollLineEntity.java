@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PayrollLine {
+public class PayrollLineEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,7 +20,7 @@ public class PayrollLine {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "payroll_id")
-    private Payroll payroll;
+    private PayrollEntity payrollEntity;
 
     @Column(name = "group_target_id", nullable = false)
     private Long groupTargetId;

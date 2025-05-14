@@ -1,12 +1,9 @@
 package com.apus.manage_salary_demo.repository;
 
-import com.apus.manage_salary_demo.entity.GroupAllowance;
+import com.apus.manage_salary_demo.entity.GroupAllowanceEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Query;
 
-import java.util.List;
-
-public interface GroupAllowanceRepository extends JpaRepository<GroupAllowance, Long>, JpaSpecificationExecutor<GroupAllowance> {
+public interface GroupAllowanceRepository extends JpaRepository<GroupAllowanceEntity, Long>, JpaSpecificationExecutor<GroupAllowanceEntity> {
     boolean existsByCode(String code);
 }

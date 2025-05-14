@@ -2,8 +2,8 @@ package com.apus.manage_salary_demo.repository.specifiation;
 
 import com.apus.manage_salary_demo.common.utils.TextUtils;
 import com.apus.manage_salary_demo.entity.AbstractAuditingEntity_;
-import com.apus.manage_salary_demo.entity.Allowance;
-import com.apus.manage_salary_demo.entity.Allowance_;
+import com.apus.manage_salary_demo.entity.AllowanceEntity;
+import com.apus.manage_salary_demo.entity.AllowanceEntity_;
 import jakarta.persistence.criteria.Predicate;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -16,7 +16,7 @@ import java.util.Objects;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class AllowanceSpecification {
-    private final List<Specification<Allowance>> specifications = new ArrayList<>();
+    private final List<Specification<AllowanceEntity>> specifications = new ArrayList<>();
 
     public static AllowanceSpecification builder() {
         return new AllowanceSpecification();
@@ -31,11 +31,11 @@ public final class AllowanceSpecification {
                         // Sử dụng unaccent của postgresql để loại bỏ tiếng việt
                         return cb.or(
                                 cb.like(
-                                        cb.lower(cb.function("unaccent", String.class, root.get(Allowance_.NAME))),
+                                        cb.lower(cb.function("unaccent", String.class, root.get(AllowanceEntity_.NAME))),
                                         likePattern
                                 ),
                                 cb.like(
-                                        cb.lower(cb.function("unaccent", String.class, root.get(Allowance_.CODE))),
+                                        cb.lower(cb.function("unaccent", String.class, root.get(AllowanceEntity_.CODE))),
                                         likePattern
                                 )
                         );
@@ -50,7 +50,7 @@ public final class AllowanceSpecification {
         if (active != null) {
             specifications.add(
                     (root, q, cb) ->
-                            cb.equal(root.get(Allowance_.IS_ACTIVE), active)
+                            cb.equal(root.get(AllowanceEntity_.IS_ACTIVE), active)
             );
         }
         return this;
@@ -66,7 +66,7 @@ public final class AllowanceSpecification {
         return this;
     }
 
-    public Specification<Allowance> build() {
+    public Specification<AllowanceEntity> build() {
         return (root, q, cb) -> cb.and(specifications.stream()
                 .filter(Objects::nonNull)
                 .map(s -> s.toPredicate(root, q, cb)).toArray(Predicate[]::new));

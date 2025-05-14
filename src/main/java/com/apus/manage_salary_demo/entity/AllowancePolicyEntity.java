@@ -11,7 +11,7 @@ import java.util.List;
 @Table(name = "allowance_policy")
 @Getter
 @Setter
-public class AllowancePolicy extends AbstractAuditingEntity<Long> {
+public class AllowancePolicyEntity extends AbstractAuditingEntity<Long> {
 
     @Column(nullable = false, unique = true, length = 20)
     private String code;
@@ -37,9 +37,9 @@ public class AllowancePolicy extends AbstractAuditingEntity<Long> {
     @Column(nullable = false, length = 50)
     private String state;
 
-    @OneToMany(mappedBy = "allowancePolicy", cascade = CascadeType.ALL)
-    private List<AllowancePolicyLine> lines;
+    @OneToMany(mappedBy = "allowancePolicyEntity", cascade = CascadeType.ALL)
+    private List<AllowancePolicyLineEntity> lines;
 
-    @OneToMany(mappedBy = "allowancePolicy", cascade = CascadeType.ALL)
-    private List<AllowancePolicyApplicableTarget> targets;
+    @OneToMany(mappedBy = "allowancePolicyEntity", cascade = CascadeType.ALL)
+    private List<AllowancePolicyApplicableTargetEntity> targets;
 }

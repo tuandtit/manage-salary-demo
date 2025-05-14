@@ -15,7 +15,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Payroll extends AbstractAuditingEntity<Long> {
+public class PayrollEntity extends AbstractAuditingEntity<Long> {
 
     @Column(name = "employee_id", nullable = false)
     private Long employeeId;

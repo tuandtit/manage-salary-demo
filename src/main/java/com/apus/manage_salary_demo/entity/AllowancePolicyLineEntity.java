@@ -10,15 +10,15 @@ import java.math.BigDecimal;
 @Table(name = "allowance_policy_line")
 @Getter
 @Setter
-public class AllowancePolicyLine extends AbstractAuditingEntity<Long> {
+public class AllowancePolicyLineEntity extends AbstractAuditingEntity<Long> {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "allowance_policy_id", nullable = false)
-    private AllowancePolicy allowancePolicy;
+    private AllowancePolicyEntity allowancePolicyEntity;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "allowance_id", nullable = false)
-    private Allowance allowance;
+    private AllowanceEntity allowanceEntity;
 
     @Column(nullable = false, length = 50)
     private String cycle;

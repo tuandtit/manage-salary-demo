@@ -10,7 +10,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RewardPolicyApplicableTarget {
+public class RewardPolicyApplicableTargetEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,7 +18,7 @@ public class RewardPolicyApplicableTarget {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "reward_policy_id")
-    private RewardPolicy rewardPolicy;
+    private RewardPolicyEntity rewardPolicyEntity;
 
     private Long targetId;
 }

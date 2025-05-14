@@ -8,11 +8,11 @@ import lombok.Setter;
 @Table(name = "allowance_policy_applicable_target")
 @Getter
 @Setter
-public class AllowancePolicyApplicableTarget extends AbstractAuditingEntity<Long> {
+public class AllowancePolicyApplicableTargetEntity extends AbstractAuditingEntity<Long> {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "allowance_policy_id", nullable = false)
-    private AllowancePolicy allowancePolicy;
+    private AllowancePolicyEntity allowancePolicyEntity;
 
     @Column(name = "target_id")
     private Long targetId;

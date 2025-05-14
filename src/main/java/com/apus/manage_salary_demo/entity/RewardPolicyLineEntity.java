@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RewardPolicyLine {
+public class RewardPolicyLineEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,11 +20,11 @@ public class RewardPolicyLine {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "reward_policy_id")
-    private RewardPolicy rewardPolicy;
+    private RewardPolicyEntity rewardPolicyEntity;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "reward_id")
-    private Reward reward;
+    private RewardEntity rewardEntity;
 
     @Column(length = 50, nullable = false)
     private String cycle;

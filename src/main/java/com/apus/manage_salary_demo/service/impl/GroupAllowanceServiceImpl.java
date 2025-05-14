@@ -3,7 +3,7 @@ package com.apus.manage_salary_demo.service.impl;
 import com.apus.manage_salary_demo.common.error.BusinessException;
 import com.apus.manage_salary_demo.dto.GroupAllowanceDto;
 import com.apus.manage_salary_demo.dto.request.search.GroupAllowanceSearchRequest;
-import com.apus.manage_salary_demo.entity.GroupAllowance;
+import com.apus.manage_salary_demo.entity.GroupAllowanceEntity;
 import com.apus.manage_salary_demo.mapper.GroupAllowanceMapper;
 import com.apus.manage_salary_demo.repository.GroupAllowanceRepository;
 import com.apus.manage_salary_demo.service.GroupAllowanceService;
@@ -24,10 +24,10 @@ public class GroupAllowanceServiceImpl implements GroupAllowanceService {
     @Override
     public GroupAllowanceDto create(GroupAllowanceDto dto) {
         validateDuplicateCode(dto.getCode());
-        GroupAllowance entity = groupAllowanceMapper.toEntity(dto);
+        GroupAllowanceEntity entity = groupAllowanceMapper.toEntity(dto);
 
         if (dto.getParent() != null && dto.getParent().getId() != null) {
-            GroupAllowance parent = existsGroupAllowance(dto.getParent().getId());
+            GroupAllowanceEntity parent = existsGroupAllowance(dto.getParent().getId());
             entity.setParent(parent);
         }
 
@@ -41,14 +41,14 @@ public class GroupAllowanceServiceImpl implements GroupAllowanceService {
             throw new BusinessException("400", "id must be not null");
         }
 
-        GroupAllowance entity = existsGroupAllowance(dto.getId());
+        GroupAllowanceEntity entity = existsGroupAllowance(dto.getId());
 
         if (!dto.getCode().equals(entity.getCode()))
             validateDuplicateCode(dto.getCode());
         groupAllowanceMapper.update(dto, entity);
 
         if (dto.getParent() != null && dto.getParent().getId() != null) {
-            GroupAllowance parent = existsGroupAllowance(dto.getParent().getId());
+            GroupAllowanceEntity parent = existsGroupAllowance(dto.getParent().getId());
             entity.setParent(parent);
         }
 
@@ -79,14 +79,14 @@ public class GroupAllowanceServiceImpl implements GroupAllowanceService {
         }
     }
 
-    private GroupAllowanceDto saveAndReturn(GroupAllowance groupAllowance) {
-        GroupAllowance save = groupAllowanceRepository.save(groupAllowance);
+    private GroupAllowanceDto saveAndReturn(GroupAllowanceEntity groupAllowanceEntity) {
+        GroupAllowanceEntity save = groupAllowanceRepository.save(groupAllowanceEntity);
         return GroupAllowanceDto.builder()
                 .id(save.getId())
                 .build();
     }
 
-    private GroupAllowance existsGroupAllowance(Long id) {
+    private GroupAllowanceEntity existsGroupAllowance(Long id) {
         return groupAllowanceRepository.findById(id)
                 .orElseThrow(() -> new BusinessException("404", "GroupAllowance (or parent) not found with id " + id));
     }

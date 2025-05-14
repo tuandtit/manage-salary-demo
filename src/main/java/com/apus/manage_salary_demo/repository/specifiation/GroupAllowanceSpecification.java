@@ -2,8 +2,8 @@ package com.apus.manage_salary_demo.repository.specifiation;
 
 import com.apus.manage_salary_demo.common.utils.TextUtils;
 import com.apus.manage_salary_demo.entity.AbstractAuditingEntity_;
-import com.apus.manage_salary_demo.entity.GroupAllowance;
-import com.apus.manage_salary_demo.entity.GroupAllowance_;
+import com.apus.manage_salary_demo.entity.GroupAllowanceEntity;
+import com.apus.manage_salary_demo.entity.GroupAllowanceEntity_;
 import jakarta.persistence.criteria.Predicate;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -16,7 +16,7 @@ import java.util.Objects;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class GroupAllowanceSpecification {
-    private final List<Specification<GroupAllowance>> specifications = new ArrayList<>();
+    private final List<Specification<GroupAllowanceEntity>> specifications = new ArrayList<>();
 
     public static GroupAllowanceSpecification builder() {
         return new GroupAllowanceSpecification();
@@ -31,11 +31,11 @@ public final class GroupAllowanceSpecification {
                         // Sử dụng unaccent của postgresql để loại bỏ tiếng việt
                         return cb.or(
                                 cb.like(
-                                        cb.lower(cb.function("unaccent", String.class, root.get(GroupAllowance_.NAME))),
+                                        cb.lower(cb.function("unaccent", String.class, root.get(GroupAllowanceEntity_.NAME))),
                                         likePattern
                                 ),
                                 cb.like(
-                                        cb.lower(cb.function("unaccent", String.class, root.get(GroupAllowance_.CODE))),
+                                        cb.lower(cb.function("unaccent", String.class, root.get(GroupAllowanceEntity_.CODE))),
                                         likePattern
                                 )
                         );
@@ -50,7 +50,7 @@ public final class GroupAllowanceSpecification {
         if (active != null) {
             specifications.add(
                     (root, q, cb) ->
-                            cb.equal(root.get(GroupAllowance_.IS_ACTIVE), active)
+                            cb.equal(root.get(GroupAllowanceEntity_.IS_ACTIVE), active)
             );
         }
         return this;
@@ -66,7 +66,7 @@ public final class GroupAllowanceSpecification {
         return this;
     }
 
-    public Specification<GroupAllowance> build() {
+    public Specification<GroupAllowanceEntity> build() {
         return (root, q, cb) -> cb.and(specifications.stream()
                 .filter(Objects::nonNull)
                 .map(s -> s.toPredicate(root, q, cb)).toArray(Predicate[]::new));
