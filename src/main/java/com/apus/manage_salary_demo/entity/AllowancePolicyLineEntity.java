@@ -1,8 +1,8 @@
 package com.apus.manage_salary_demo.entity;
 
+import com.apus.manage_salary_demo.common.enums.Cycle;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 
@@ -10,18 +10,18 @@ import java.math.BigDecimal;
 @Table(name = "allowance_policy_line")
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class AllowancePolicyLineEntity extends AbstractAuditingEntity<Long> {
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "allowance_policy_id", nullable = false)
-    private AllowancePolicyEntity allowancePolicyEntity;
+    private Long allowancePolicyId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "allowance_id", nullable = false)
-    private AllowanceEntity allowanceEntity;
+    private Long allowanceId;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 50)
-    private String cycle;
+    private Cycle cycle = Cycle.MONTHLY;
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal amount;

@@ -18,7 +18,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ExceptionTranslator {
 
-
     private ResponseEntity<ErrorResponse> badRequest(ErrorResponse result) {
         return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
     }

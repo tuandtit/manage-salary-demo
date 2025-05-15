@@ -1,6 +1,7 @@
 package com.apus.manage_salary_demo.controller;
 
 import com.apus.manage_salary_demo.dto.AllowanceDto;
+import com.apus.manage_salary_demo.dto.BaseDto;
 import com.apus.manage_salary_demo.dto.request.search.AllowanceSearchRequest;
 import com.apus.manage_salary_demo.dto.response.PagingResponse;
 import com.apus.manage_salary_demo.dto.response.Response;
@@ -20,12 +21,12 @@ public class AllowanceController {
     AllowanceService allowanceService;
 
     @PostMapping
-    public Response<AllowanceDto> create(@Valid @RequestBody AllowanceDto dto) {
+    public Response<BaseDto> create(@Valid @RequestBody AllowanceDto dto) {
         return Response.created(allowanceService.create(dto));
     }
 
     @PutMapping
-    public Response<AllowanceDto> update(@Valid @RequestBody AllowanceDto dto) {
+    public Response<BaseDto> update(@Valid @RequestBody AllowanceDto dto) {
         return Response.ok(allowanceService.update(dto));
     }
 

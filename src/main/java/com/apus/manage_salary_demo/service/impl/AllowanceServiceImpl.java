@@ -7,6 +7,7 @@ import com.apus.manage_salary_demo.client.resources.dto.CurrencyDto;
 import com.apus.manage_salary_demo.common.error.BusinessException;
 import com.apus.manage_salary_demo.common.utils.ConvertUtils;
 import com.apus.manage_salary_demo.dto.AllowanceDto;
+import com.apus.manage_salary_demo.dto.BaseDto;
 import com.apus.manage_salary_demo.dto.request.search.AllowanceSearchRequest;
 import com.apus.manage_salary_demo.entity.AllowanceEntity;
 import com.apus.manage_salary_demo.entity.GroupAllowanceEntity;
@@ -18,9 +19,9 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.function.Function;
@@ -42,17 +43,19 @@ public class AllowanceServiceImpl implements AllowanceService {
     AllowanceMapper allowanceMapper;
 
     @Override
-    public AllowanceDto create(AllowanceDto dto) {
+    @Transactional
+    public BaseDto create(AllowanceDto dto) {
         validateDuplicateCode(dto.getCode());
         AllowanceEntity allowanceEntity = allowanceMapper.toEntity(dto);
         Long groupAllowanceId = dto.getGroupAllowance().getId();
         if (groupAllowanceId != null)
-            allowanceEntity.setGroupAllowanceEntity(existsGroupAllowance(groupAllowanceId));
+            allowanceEntity.setGroupAllowanceId(existsGroupAllowance(groupAllowanceId).getId());
         return saveAndReturn(allowanceEntity);
     }
 
     @Override
-    public AllowanceDto update(AllowanceDto dto) {
+    @Transactional
+    public BaseDto update(AllowanceDto dto) {
         if (dto.getId() == null) {
             throw new BusinessException("400", "id must be not null");
         }
@@ -65,7 +68,7 @@ public class AllowanceServiceImpl implements AllowanceService {
 
         if (dto.getGroupAllowance() != null && dto.getGroupAllowance().getId() != null) {
             GroupAllowanceEntity parent = existsGroupAllowance(dto.getGroupAllowance().getId());
-            entity.setGroupAllowanceEntity(parent);
+            entity.setGroupAllowanceId(parent.getId());
         }
 
         return saveAndReturn(entity);
@@ -87,44 +90,48 @@ public class AllowanceServiceImpl implements AllowanceService {
 
     @Override
     public Page<AllowanceDto> getAll(AllowanceSearchRequest request) {
-        Page<AllowanceEntity> page = allowanceRepository.findAll(request.specification(), request.pageable());
-
-        if (page.isEmpty()) {
-            return new PageImpl<>(Collections.emptyList(), page.getPageable(), page.getTotalElements());
-        }
-
-        Set<Long> uomIds = new HashSet<>();
-        for (AllowanceEntity allowanceEntity : page.getContent()) {
-            Long uomId = allowanceEntity.getUomId();
-            if (uomId != null) {
-                uomIds.add(uomId);
-            }
-        }
-
-
-        Map<Long, UomDto> uomMap = buildUomMap(uomIds);
-
-        Set<Long> currencyIds = new HashSet<>();
-        for (AllowanceEntity allowanceEntity : page.getContent()) {
-            Long currencyId = allowanceEntity.getCurrencyId();
-            if (currencyId != null) {
-                currencyIds.add(currencyId);
-            }
-        }
-
-        Map<Long, CurrencyDto> currencyMap = buildCurrencyMap(currencyIds);
-
-        List<AllowanceDto> dtoList = page.stream().map(allowance -> {
-            AllowanceDto allowanceDto = allowanceMapper.toDto(allowance);
-            allowanceDto.setUom(uomMap.get(allowance.getUomId()));
-            allowanceDto.setCurrency(currencyMap.get(allowance.getCurrencyId()));
-            return allowanceDto;
-        }).toList();
-
-        return new PageImpl<>(dtoList, page.getPageable(), page.getTotalElements());
+        return allowanceRepository.findAll(request.specification(), request.pageable())
+                .map(allowanceMapper::toDto);
     }
 
-    public Map<Long, UomDto> buildUomMap(Set<Long> uomIds) {
+    @Override
+    public List<AllowanceDto> getAllDetailByIds(Set<Long> ids) {
+        List<AllowanceEntity> allowanceEntities = allowanceRepository.findAllById(ids);
+
+        Map<Long, UomDto> uomMap = buildUomMapFromAllowances(allowanceEntities);
+        Map<Long, CurrencyDto> currencyMap = buildCurrencyMapFromAllowances(allowanceEntities);
+
+        List<AllowanceDto> dtoList = new ArrayList<>();
+        for (AllowanceEntity allowance : allowanceEntities) {
+            AllowanceDto dto = allowanceMapper.toDto(allowance);
+            dto.setUom(uomMap.get(allowance.getUomId()));
+            dto.setCurrency(currencyMap.get(allowance.getCurrencyId()));
+            dtoList.add(dto);
+        }
+        return dtoList;
+    }
+
+    private Map<Long, UomDto> buildUomMapFromAllowances(List<AllowanceEntity> allowances) {
+        Set<Long> uomIds = new HashSet<>();
+        for (AllowanceEntity allowance : allowances) {
+            if (allowance.getUomId() != null) {
+                uomIds.add(allowance.getUomId());
+            }
+        }
+        return buildUomMap(uomIds);
+    }
+
+    private Map<Long, CurrencyDto> buildCurrencyMapFromAllowances(List<AllowanceEntity> allowances) {
+        Set<Long> currencyIds = new HashSet<>();
+        for (AllowanceEntity allowance : allowances) {
+            if (allowance.getCurrencyId() != null) {
+                currencyIds.add(allowance.getCurrencyId());
+            }
+        }
+        return buildCurrencyMap(currencyIds);
+    }
+
+    private Map<Long, UomDto> buildUomMap(Set<Long> uomIds) {
         if (uomIds == null || uomIds.isEmpty()) return Collections.emptyMap();
 
         List<UomDto> content = uomClient
@@ -163,9 +170,9 @@ public class AllowanceServiceImpl implements AllowanceService {
                 .orElseThrow(() -> new BusinessException("404", "groupAllowance not found with id: " + id));
     }
 
-    private AllowanceDto saveAndReturn(AllowanceEntity allowanceEntity) {
+    private BaseDto saveAndReturn(AllowanceEntity allowanceEntity) {
         AllowanceEntity save = allowanceRepository.save(allowanceEntity);
-        return AllowanceDto.builder()
+        return BaseDto.builder()
                 .id(save.getId())
                 .build();
     }

@@ -5,14 +5,9 @@ import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
-public enum State {
-    //dùng chung
+public enum AllowancePolicyState {
     DRAFT, //dự thảo
     VALID,
     INVALID,
     CANCELLED,
-
-    //dùng riêng cho màn reward;
-    PUBLISH,
-    STORE,
 }

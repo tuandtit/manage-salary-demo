@@ -7,11 +7,11 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
-@Mapper(componentModel = "spring")
+@Mapper(config = DefaultConfigMapper.class)
 public interface AllowanceMapper extends EntityMapper<AllowanceDto, AllowanceEntity>, IncludeTypeMapperUtil {
 
     @Override
-    @Mapping(target = "groupAllowanceEntity", ignore = true)
+    @Mapping(target = "groupAllowanceId", ignore = true)
     @Mapping(target = "includeType", expression = "java(mapIncludeTypesToString(dto.getIncludeTypes()))")
     @Mapping(source = "uom.id", target = "uomId")
     @Mapping(source = "currency.id", target = "currencyId")
@@ -24,7 +24,7 @@ public interface AllowanceMapper extends EntityMapper<AllowanceDto, AllowanceEnt
     AllowanceDto toDto(AllowanceEntity entity);
 
     @Override
-    @Mapping(target = "groupAllowanceEntity", ignore = true)
+    @Mapping(target = "groupAllowanceId", ignore = true)
     @Mapping(target = "includeType", expression = "java(mapIncludeTypesToString(dto.getIncludeTypes()))")
     @Mapping(source = "uom.id", target = "uomId")
     @Mapping(source = "currency.id", target = "currencyId")

@@ -1,5 +1,6 @@
 package com.apus.manage_salary_demo.controller;
 
+import com.apus.manage_salary_demo.dto.BaseDto;
 import com.apus.manage_salary_demo.dto.GroupAllowanceDto;
 import com.apus.manage_salary_demo.dto.request.search.GroupAllowanceSearchRequest;
 import com.apus.manage_salary_demo.dto.response.PagingResponse;
@@ -20,12 +21,12 @@ public class GroupAllowanceController {
     GroupAllowanceService groupAllowanceService;
 
     @PostMapping
-    public Response<GroupAllowanceDto> create(@Valid @RequestBody GroupAllowanceDto dto) {
+    public Response<BaseDto> create(@Valid @RequestBody GroupAllowanceDto dto) {
         return Response.created(groupAllowanceService.create(dto));
     }
 
     @PutMapping
-    public Response<GroupAllowanceDto> update(@Valid @RequestBody GroupAllowanceDto dto) {
+    public Response<BaseDto> update(@Valid @RequestBody GroupAllowanceDto dto) {
         return Response.ok(groupAllowanceService.update(dto));
     }
 

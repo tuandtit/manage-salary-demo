@@ -1,6 +1,7 @@
 package com.apus.manage_salary_demo.service.impl;
 
 import com.apus.manage_salary_demo.common.error.BusinessException;
+import com.apus.manage_salary_demo.dto.BaseDto;
 import com.apus.manage_salary_demo.dto.GroupAllowanceDto;
 import com.apus.manage_salary_demo.dto.request.search.GroupAllowanceSearchRequest;
 import com.apus.manage_salary_demo.entity.GroupAllowanceEntity;
@@ -13,6 +14,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -22,20 +24,22 @@ public class GroupAllowanceServiceImpl implements GroupAllowanceService {
     GroupAllowanceMapper groupAllowanceMapper;
 
     @Override
-    public GroupAllowanceDto create(GroupAllowanceDto dto) {
+    @Transactional
+    public BaseDto create(GroupAllowanceDto dto) {
         validateDuplicateCode(dto.getCode());
         GroupAllowanceEntity entity = groupAllowanceMapper.toEntity(dto);
 
         if (dto.getParent() != null && dto.getParent().getId() != null) {
             GroupAllowanceEntity parent = existsGroupAllowance(dto.getParent().getId());
-            entity.setParent(parent);
+            entity.setParentId(parent.getId());
         }
 
         return saveAndReturn(entity);
     }
 
     @Override
-    public GroupAllowanceDto update(GroupAllowanceDto dto) {
+    @Transactional
+    public BaseDto update(GroupAllowanceDto dto) {
 
         if (dto.getId() == null) {
             throw new BusinessException("400", "id must be not null");
@@ -49,7 +53,7 @@ public class GroupAllowanceServiceImpl implements GroupAllowanceService {
 
         if (dto.getParent() != null && dto.getParent().getId() != null) {
             GroupAllowanceEntity parent = existsGroupAllowance(dto.getParent().getId());
-            entity.setParent(parent);
+            entity.setParentId(parent.getId());
         }
 
         return saveAndReturn(entity);
@@ -79,9 +83,9 @@ public class GroupAllowanceServiceImpl implements GroupAllowanceService {
         }
     }
 
-    private GroupAllowanceDto saveAndReturn(GroupAllowanceEntity groupAllowanceEntity) {
+    private BaseDto saveAndReturn(GroupAllowanceEntity groupAllowanceEntity) {
         GroupAllowanceEntity save = groupAllowanceRepository.save(groupAllowanceEntity);
-        return GroupAllowanceDto.builder()
+        return BaseDto.builder()
                 .id(save.getId())
                 .build();
     }

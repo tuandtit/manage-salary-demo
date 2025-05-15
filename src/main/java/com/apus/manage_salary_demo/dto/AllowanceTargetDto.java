@@ -1,5 +1,6 @@
 package com.apus.manage_salary_demo.dto;
 
+import com.apus.manage_salary_demo.client.resources.dto.TargetDto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,6 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class BaseDto {
+public class AllowanceTargetDto {
     private Long id;
+    private TargetDto target;
 }

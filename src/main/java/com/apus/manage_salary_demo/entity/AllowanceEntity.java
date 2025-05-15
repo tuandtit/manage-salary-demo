@@ -32,9 +32,8 @@ public class AllowanceEntity extends AbstractAuditingEntity<Long> {
     @Column(name = "currency_id")
     private Long currencyId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "group_allowance_id", nullable = false)
-    private GroupAllowanceEntity groupAllowanceEntity;
+    @Column(name = "group_allowance_id")
+    private Long groupAllowanceId;
 
     @Column(columnDefinition = "text")
     private String description;
