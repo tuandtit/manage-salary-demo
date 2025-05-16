@@ -1,17 +1,14 @@
 package com.apus.manage_salary_demo.service.impl;
 
-import com.apus.manage_salary_demo.client.dto.BaseResponse;
-import com.apus.manage_salary_demo.client.resources.DepartmentClient;
-import com.apus.manage_salary_demo.client.resources.EmployeeClient;
-import com.apus.manage_salary_demo.client.resources.PositionClient;
-import com.apus.manage_salary_demo.client.resources.dto.TargetDto;
 import com.apus.manage_salary_demo.common.enums.ApplicableType;
 import com.apus.manage_salary_demo.common.error.BusinessException;
 import com.apus.manage_salary_demo.common.utils.ConvertUtils;
 import com.apus.manage_salary_demo.config.Translator;
-import com.apus.manage_salary_demo.dto.*;
+import com.apus.manage_salary_demo.dto.AllowanceDto;
+import com.apus.manage_salary_demo.dto.AllowancePolicyDto;
+import com.apus.manage_salary_demo.dto.AllowancePolicyLineDto;
+import com.apus.manage_salary_demo.dto.BaseDto;
 import com.apus.manage_salary_demo.dto.request.search.AllowancePolicySearchRequest;
-import com.apus.manage_salary_demo.dto.response.PagingResponse;
 import com.apus.manage_salary_demo.entity.AllowancePolicyEntity;
 import com.apus.manage_salary_demo.entity.AllowancePolicyLineEntity;
 import com.apus.manage_salary_demo.mapper.AllowancePolicyLineMapper;
@@ -19,6 +16,7 @@ import com.apus.manage_salary_demo.mapper.AllowancePolicyMapper;
 import com.apus.manage_salary_demo.repository.AllowancePolicyRepository;
 import com.apus.manage_salary_demo.service.AllowancePolicyService;
 import com.apus.manage_salary_demo.service.AllowanceService;
+import com.apus.manage_salary_demo.service.helper.ClientServiceHelper;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -42,15 +40,11 @@ public class AllowancePolicyServiceImpl implements AllowancePolicyService {
     AllowancePolicyMapper policyMapper;
     AllowancePolicyLineMapper lineMapper;
 
-    //Service
+    //Helper
+    ClientServiceHelper clientHelper;
     AllowancePolicyLineService lineService;
     AllowancePolicyTargetService targetService;
     AllowanceService allowanceService;
-
-    //Client
-    DepartmentClient departmentClient;
-    PositionClient positionClient;
-    EmployeeClient employeeClient;
 
     //Translator
     Translator translator;
@@ -116,13 +110,13 @@ public class AllowancePolicyServiceImpl implements AllowancePolicyService {
         AllowancePolicyDto dto = policyMapper.toDto(entity);
 
         if (entity.getApplicableType() != null && !entity.getApplicableType().equals(ApplicableType.ALL)) {
-            Set<Long> targetIdsByPolicyId = targetService.getTargetIdsByPolicyId(entity.getId());
-            String ids = ConvertUtils.joinLongSet(targetIdsByPolicyId);
+            Set<Long> targetIds = targetService.getTargetIdsByPolicyId(entity.getId());
+            String ids = ConvertUtils.joinLongSet(targetIds);
 
             switch (entity.getApplicableType()) {
-                case DEPARTMENT -> dto.setTargets(getTargetDto(departmentClient.getAllDepartmentByIds(ids)));
-                case EMPLOYEE -> dto.setTargets(getTargetDto(employeeClient.getAllEmployeeByIds(ids)));
-                case POSITION -> dto.setTargets(getTargetDto(positionClient.getAllPositionByIds(ids)));
+                case DEPARTMENT -> dto.setTargets(clientHelper.getAllDepartmentByIds(ids));
+                case EMPLOYEE -> dto.setTargets(clientHelper.getAllEmployeeByIds(ids));
+                case POSITION -> dto.setTargets(clientHelper.getAllPositionByIds(ids));
                 default -> throw new BusinessException("400", "Applicable Type not valid");
             }
         }
@@ -158,17 +152,6 @@ public class AllowancePolicyServiceImpl implements AllowancePolicyService {
 
         return content.stream()
                 .collect(Collectors.toMap(AllowanceDto::getId, Function.identity()));
-    }
-
-    private List<AllowanceTargetDto> getTargetDto(BaseResponse<PagingResponse<TargetDto>> allTargetByIds) {
-        List<TargetDto> content = allTargetByIds.getData().getContent();
-        List<AllowanceTargetDto> targetDtoList = new ArrayList<>();
-        for (var dto : content) {
-            targetDtoList.add(AllowanceTargetDto.builder()
-                    .target(dto)
-                    .build());
-        }
-        return targetDtoList;
     }
 
     @Override

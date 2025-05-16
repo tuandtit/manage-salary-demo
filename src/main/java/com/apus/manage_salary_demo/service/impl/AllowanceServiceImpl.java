@@ -1,11 +1,8 @@
 package com.apus.manage_salary_demo.service.impl;
 
-import com.apus.manage_salary_demo.client.product.UomClient;
 import com.apus.manage_salary_demo.client.product.dto.UomDto;
-import com.apus.manage_salary_demo.client.resources.CurrencyClient;
 import com.apus.manage_salary_demo.client.resources.dto.CurrencyDto;
 import com.apus.manage_salary_demo.common.error.BusinessException;
-import com.apus.manage_salary_demo.common.utils.ConvertUtils;
 import com.apus.manage_salary_demo.config.Translator;
 import com.apus.manage_salary_demo.dto.AllowanceDto;
 import com.apus.manage_salary_demo.dto.BaseDto;
@@ -16,6 +13,7 @@ import com.apus.manage_salary_demo.mapper.AllowanceMapper;
 import com.apus.manage_salary_demo.repository.AllowanceRepository;
 import com.apus.manage_salary_demo.repository.GroupAllowanceRepository;
 import com.apus.manage_salary_demo.service.AllowanceService;
+import com.apus.manage_salary_demo.service.helper.ClientServiceHelper;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -25,16 +23,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AllowanceServiceImpl implements AllowanceService {
-    //Client
-    UomClient uomClient;
-    CurrencyClient currencyClient;
+    //Helper
+    ClientServiceHelper clientHelper;
 
     //Repository
     AllowanceRepository allowanceRepository;
@@ -87,8 +82,8 @@ public class AllowanceServiceImpl implements AllowanceService {
     public AllowanceDto getById(Long id) {
         AllowanceEntity entity = existsAllowance(id);
         AllowanceDto response = allowanceMapper.toDto(entity);
-        response.setUom(uomClient.getUomById(entity.getUomId()).getData());
-        response.setCurrency(currencyClient.getCurrencyById(entity.getCurrencyId()).getData());
+        response.setUom(clientHelper.getUomById(entity.getUomId()));
+        response.setCurrency(clientHelper.getCurrencyById(entity.getCurrencyId()));
         return response;
     }
 
@@ -115,6 +110,16 @@ public class AllowanceServiceImpl implements AllowanceService {
         return dtoList;
     }
 
+    private Map<Long, CurrencyDto> buildCurrencyMapFromAllowances(List<AllowanceEntity> allowances) {
+        Set<Long> currencyIds = new HashSet<>();
+        for (AllowanceEntity allowance : allowances) {
+            if (allowance.getCurrencyId() != null) {
+                currencyIds.add(allowance.getUomId());
+            }
+        }
+        return clientHelper.buildCurrencyMap(currencyIds);
+    }
+
     private Map<Long, UomDto> buildUomMapFromAllowances(List<AllowanceEntity> allowances) {
         Set<Long> uomIds = new HashSet<>();
         for (AllowanceEntity allowance : allowances) {
@@ -122,39 +127,7 @@ public class AllowanceServiceImpl implements AllowanceService {
                 uomIds.add(allowance.getUomId());
             }
         }
-        return buildUomMap(uomIds);
-    }
-
-    private Map<Long, CurrencyDto> buildCurrencyMapFromAllowances(List<AllowanceEntity> allowances) {
-        Set<Long> currencyIds = new HashSet<>();
-        for (AllowanceEntity allowance : allowances) {
-            if (allowance.getCurrencyId() != null) {
-                currencyIds.add(allowance.getCurrencyId());
-            }
-        }
-        return buildCurrencyMap(currencyIds);
-    }
-
-    private Map<Long, UomDto> buildUomMap(Set<Long> uomIds) {
-        if (uomIds == null || uomIds.isEmpty()) return Collections.emptyMap();
-
-        List<UomDto> content = uomClient
-                .getListUom(ConvertUtils.joinLongSet(uomIds))
-                .getData().getContent();
-
-        return content.stream()
-                .collect(Collectors.toMap(UomDto::getId, Function.identity()));
-    }
-
-    private Map<Long, CurrencyDto> buildCurrencyMap(Set<Long> currencyIds) {
-        if (currencyIds == null || currencyIds.isEmpty()) return Collections.emptyMap();
-
-        List<CurrencyDto> content = currencyClient
-                .getListCurrency(ConvertUtils.joinLongSet(currencyIds))
-                .getData().getContent();
-
-        return content.stream()
-                .collect(Collectors.toMap(CurrencyDto::getId, Function.identity()));
+        return clientHelper.buildUomMap(uomIds);
     }
 
     private void validateDuplicateCode(String code) {

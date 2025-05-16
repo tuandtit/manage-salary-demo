@@ -19,7 +19,7 @@ public class AllowanceEntity extends AbstractAuditingEntity<Long> {
     @Column(nullable = false)
     private String name;
 
-    @Column(name = "include_type", nullable = false, length = 50)
+    @Column(length = 50)
     private String includeType;
 
     @Enumerated(EnumType.STRING)

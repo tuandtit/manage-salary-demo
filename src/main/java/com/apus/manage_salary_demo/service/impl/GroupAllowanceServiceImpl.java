@@ -22,14 +22,14 @@ import org.springframework.transaction.annotation.Transactional;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class GroupAllowanceServiceImpl implements GroupAllowanceService {
     GroupAllowanceRepository groupAllowanceRepository;
-    GroupAllowanceMapper groupAllowanceMapper;
+    GroupAllowanceMapper allowanceMapper;
     Translator translator;
 
     @Override
     @Transactional
     public BaseDto create(GroupAllowanceDto dto) {
         validateDuplicateCode(dto.getCode());
-        GroupAllowanceEntity entity = groupAllowanceMapper.toEntity(dto);
+        GroupAllowanceEntity entity = allowanceMapper.toEntity(dto);
 
         if (dto.getParent() != null && dto.getParent().getId() != null) {
             GroupAllowanceEntity parent = existsGroupAllowance(dto.getParent().getId());
@@ -51,11 +51,13 @@ public class GroupAllowanceServiceImpl implements GroupAllowanceService {
 
         if (!dto.getCode().equals(entity.getCode()))
             validateDuplicateCode(dto.getCode());
-        groupAllowanceMapper.update(dto, entity);
+        allowanceMapper.update(dto, entity);
 
         if (dto.getParent() != null && dto.getParent().getId() != null) {
             GroupAllowanceEntity parent = existsGroupAllowance(dto.getParent().getId());
             entity.setParentId(parent.getId());
+        } else {
+            entity.setParentId(null);
         }
 
         return saveAndReturn(entity);
@@ -68,13 +70,24 @@ public class GroupAllowanceServiceImpl implements GroupAllowanceService {
 
     @Override
     public GroupAllowanceDto getById(Long id) {
-        return groupAllowanceMapper.toDto(existsGroupAllowance(id));
+        GroupAllowanceEntity entity = existsGroupAllowance(id);
+        GroupAllowanceDto dto = allowanceMapper.toDto(entity);
+
+        if (entity.getParentId() != null) {
+            GroupAllowanceEntity parent = existsGroupAllowance(entity.getParentId());
+            dto.setParent(GroupAllowanceDto.ParentDto.builder()
+                    .id(parent.getId())
+                    .code(parent.getCode())
+                    .name(parent.getName())
+                    .build());
+        }
+        return dto;
     }
 
     @Override
     public Page<GroupAllowanceDto> getAll(GroupAllowanceSearchRequest request) {
         return groupAllowanceRepository.findAll(request.specification(), request.pageable())
-                .map(groupAllowanceMapper::toDto);
+                .map(allowanceMapper::toDto);
 
     }
 

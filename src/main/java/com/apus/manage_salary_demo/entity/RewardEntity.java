@@ -1,6 +1,8 @@
 package com.apus.manage_salary_demo.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import lombok.*;
 
 @Entity
@@ -15,14 +17,12 @@ public class RewardEntity extends AbstractAuditingEntity<Long> {
     @Column(length = 20, nullable = false, unique = true)
     private String code;
 
-    @Column(length = 255, nullable = false)
+    @Column(nullable = false)
     private String name;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "group_reward_id")
-    private GroupRewardEntity groupRewardEntity;
+    private Long groupRewardId;
 
-    @Column(length = 50, nullable = false)
+    @Column(length = 50)
     private String includeType;
 
     @Column(length = 50, nullable = false)

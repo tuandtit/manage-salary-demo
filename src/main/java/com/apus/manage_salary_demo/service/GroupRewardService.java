@@ -3,6 +3,7 @@ package com.apus.manage_salary_demo.service;
 import com.apus.manage_salary_demo.dto.BaseDto;
 import com.apus.manage_salary_demo.dto.GroupRewardDto;
 import com.apus.manage_salary_demo.dto.request.search.GroupAllowanceSearchRequest;
+import com.apus.manage_salary_demo.dto.request.search.GroupRewardSearchRequest;
 import org.springframework.data.domain.Page;
 
 public interface GroupRewardService {
@@ -15,5 +16,5 @@ public interface GroupRewardService {
 
     GroupRewardDto getById(Long id);
 
-    Page<GroupRewardDto> getAll(GroupAllowanceSearchRequest request);
+    Page<GroupRewardDto> getAll(GroupRewardSearchRequest request);
 }

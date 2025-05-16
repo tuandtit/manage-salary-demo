@@ -22,7 +22,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class AllowanceDto {
+public class RewardDto {
     private Long id;
 
     @NotBlank(message = "Code must not be blank")
@@ -37,7 +37,7 @@ public class AllowanceDto {
     List<String> includeTypes;
 
     @NotNull(message = "groupAllowance must be not null")
-    private BaseDto groupAllowance;
+    private BaseDto groupReward;
 
     @Valid
     private UomDto uom;
@@ -50,7 +50,4 @@ public class AllowanceDto {
     private String type;
 
     private String description;
-
-    @NotNull(message = "isActive must not be null")
-    private Boolean isActive;
 }

@@ -18,9 +18,7 @@ public class GroupRewardEntity extends AbstractAuditingEntity<Long> {
     @Column(nullable = false)
     private String name;
 
-    @ManyToOne
-    @JoinColumn(name = "parent_id")
-    private GroupRewardEntity parent;
+    private Long parentId;
 
     @Column(columnDefinition = "text")
     private String description;
