@@ -31,6 +31,7 @@ public class ApiError {
     }
 
     public ApiError(int code) {
+        this.message = "Success";
         this.code = code;
     }
 

@@ -6,6 +6,7 @@ import com.apus.manage_salary_demo.client.resources.CurrencyClient;
 import com.apus.manage_salary_demo.client.resources.dto.CurrencyDto;
 import com.apus.manage_salary_demo.common.error.BusinessException;
 import com.apus.manage_salary_demo.common.utils.ConvertUtils;
+import com.apus.manage_salary_demo.config.Translator;
 import com.apus.manage_salary_demo.dto.AllowanceDto;
 import com.apus.manage_salary_demo.dto.BaseDto;
 import com.apus.manage_salary_demo.dto.request.search.AllowanceSearchRequest;
@@ -42,6 +43,9 @@ public class AllowanceServiceImpl implements AllowanceService {
     //Mapper
     AllowanceMapper allowanceMapper;
 
+    //Translator
+    Translator translator;
+
     @Override
     @Transactional
     public BaseDto create(AllowanceDto dto) {
@@ -57,7 +61,7 @@ public class AllowanceServiceImpl implements AllowanceService {
     @Transactional
     public BaseDto update(AllowanceDto dto) {
         if (dto.getId() == null) {
-            throw new BusinessException("400", "id must be not null");
+            throw new BusinessException("400", translator.toLocale("error.id.not.null"));
         }
 
         AllowanceEntity entity = existsAllowance(dto.getId());
@@ -156,18 +160,18 @@ public class AllowanceServiceImpl implements AllowanceService {
     private void validateDuplicateCode(String code) {
         if (allowanceRepository.existsByCode(code)) {
             throw new BusinessException(String.valueOf(HttpStatus.BAD_REQUEST.value()),
-                    "The allowance group already exists with the code: " + code);
+                    translator.toLocale("error.code.duplicate") + code);
         }
     }
 
     private AllowanceEntity existsAllowance(Long id) {
         return allowanceRepository.findById(id)
-                .orElseThrow(() -> new BusinessException("404", "Allowance not found with id: " + id));
+                .orElseThrow(() -> new BusinessException("404", "Allowance " + translator.toLocale("error.resource.not.found") + id));
     }
 
     private GroupAllowanceEntity existsGroupAllowance(Long id) {
         return groupAllowanceRepository.findById(id)
-                .orElseThrow(() -> new BusinessException("404", "groupAllowance not found with id: " + id));
+                .orElseThrow(() -> new BusinessException("404", "groupAllowance " + translator.toLocale("error.resource.not.found") + id));
     }
 
     private BaseDto saveAndReturn(AllowanceEntity allowanceEntity) {

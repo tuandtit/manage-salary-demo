@@ -15,7 +15,7 @@ public class GroupRewardEntity extends AbstractAuditingEntity<Long> {
     @Column(length = 20, nullable = false, unique = true)
     private String code;
 
-    @Column(length = 255, nullable = false)
+    @Column(nullable = false)
     private String name;
 
     @ManyToOne

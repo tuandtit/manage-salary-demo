@@ -1,7 +1,6 @@
 package com.apus.manage_salary_demo.service.impl;
 
 import com.apus.manage_salary_demo.dto.AllowanceTargetDto;
-import com.apus.manage_salary_demo.dto.BaseDto;
 import com.apus.manage_salary_demo.entity.AllowancePolicyApplicableTargetEntity;
 import com.apus.manage_salary_demo.repository.AllowancePolicyTargetRepository;
 import lombok.RequiredArgsConstructor;

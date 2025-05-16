@@ -1,6 +1,7 @@
 package com.apus.manage_salary_demo.service.impl;
 
 import com.apus.manage_salary_demo.common.error.BusinessException;
+import com.apus.manage_salary_demo.config.Translator;
 import com.apus.manage_salary_demo.dto.BaseDto;
 import com.apus.manage_salary_demo.dto.GroupAllowanceDto;
 import com.apus.manage_salary_demo.dto.request.search.GroupAllowanceSearchRequest;
@@ -22,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class GroupAllowanceServiceImpl implements GroupAllowanceService {
     GroupAllowanceRepository groupAllowanceRepository;
     GroupAllowanceMapper groupAllowanceMapper;
+    Translator translator;
 
     @Override
     @Transactional
@@ -42,7 +44,7 @@ public class GroupAllowanceServiceImpl implements GroupAllowanceService {
     public BaseDto update(GroupAllowanceDto dto) {
 
         if (dto.getId() == null) {
-            throw new BusinessException("400", "id must be not null");
+            throw new BusinessException("400", translator.toLocale("error.id.not.null"));
         }
 
         GroupAllowanceEntity entity = existsGroupAllowance(dto.getId());
@@ -79,7 +81,7 @@ public class GroupAllowanceServiceImpl implements GroupAllowanceService {
     private void validateDuplicateCode(String code) {
         if (groupAllowanceRepository.existsByCode(code)) {
             throw new BusinessException(String.valueOf(HttpStatus.BAD_REQUEST.value()),
-                    "The allowance group already exists with the code: " + code);
+                    translator.toLocale("error.code.duplicate") + code);
         }
     }
 
@@ -92,6 +94,6 @@ public class GroupAllowanceServiceImpl implements GroupAllowanceService {
 
     private GroupAllowanceEntity existsGroupAllowance(Long id) {
         return groupAllowanceRepository.findById(id)
-                .orElseThrow(() -> new BusinessException("404", "GroupAllowance (or parent) not found with id " + id));
+                .orElseThrow(() -> new BusinessException("404", translator.toLocale("error.resource.not.found") + id));
     }
 }

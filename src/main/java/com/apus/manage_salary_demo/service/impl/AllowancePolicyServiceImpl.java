@@ -8,6 +8,7 @@ import com.apus.manage_salary_demo.client.resources.dto.TargetDto;
 import com.apus.manage_salary_demo.common.enums.ApplicableType;
 import com.apus.manage_salary_demo.common.error.BusinessException;
 import com.apus.manage_salary_demo.common.utils.ConvertUtils;
+import com.apus.manage_salary_demo.config.Translator;
 import com.apus.manage_salary_demo.dto.*;
 import com.apus.manage_salary_demo.dto.request.search.AllowancePolicySearchRequest;
 import com.apus.manage_salary_demo.dto.response.PagingResponse;
@@ -50,6 +51,9 @@ public class AllowancePolicyServiceImpl implements AllowancePolicyService {
     DepartmentClient departmentClient;
     PositionClient positionClient;
     EmployeeClient employeeClient;
+
+    //Translator
+    Translator translator;
 
     @Override
     @Transactional
@@ -176,7 +180,7 @@ public class AllowancePolicyServiceImpl implements AllowancePolicyService {
     private void validateDuplicateCode(String code) {
         if (policyRepository.existsByCode(code)) {
             throw new BusinessException(String.valueOf(HttpStatus.BAD_REQUEST.value()),
-                    "The allowance policy already exists with the code: " + code);
+                    translator.toLocale("error.code.duplicate") + code);
         }
     }
 }
