@@ -1,8 +1,7 @@
 package com.apus.manage_salary_demo.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import com.apus.manage_salary_demo.common.enums.ApplicableType;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -36,6 +35,7 @@ public class RewardPolicyEntity extends AbstractAuditingEntity<Long> {
     @Column(length = 50, nullable = false)
     private String state;
 
-    @Column(length = 50, nullable = false, unique = true)
-    private String applicableType;
+    @Enumerated(EnumType.STRING)
+    @Column(length = 50, nullable = false)
+    private ApplicableType applicableType = ApplicableType.ALL;
 }

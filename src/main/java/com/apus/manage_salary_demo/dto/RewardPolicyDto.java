@@ -1,6 +1,5 @@
 package com.apus.manage_salary_demo.dto;
 
-import com.apus.manage_salary_demo.common.enums.AllowancePolicyState;
 import com.apus.manage_salary_demo.common.enums.ApplicableType;
 import com.apus.manage_salary_demo.common.enums.PolicyType;
 import com.apus.manage_salary_demo.common.enums.RewardPolicyState;
@@ -47,13 +46,14 @@ public class RewardPolicyDto {
     @EnumValueOrList(name = "applicableType", enumClass = ApplicableType.class)
     private String applicableType;
 
+    @NotNull(message = "state must be not null")
     @EnumValueOrList(name = "state", enumClass = RewardPolicyState.class)
     private String state;
 
     private List<ApplicableTargetDto> targets;
 
     @Valid
-    private List<AllowancePolicyLineDto> lines;
+    private List<RewardPolicyLineDto> lines;
 
     private String description;
 }

@@ -1,7 +1,9 @@
 package com.apus.manage_salary_demo.service.impl;
 
 import com.apus.manage_salary_demo.client.product.UomClient;
+import com.apus.manage_salary_demo.client.product.dto.UomDto;
 import com.apus.manage_salary_demo.client.resources.CurrencyClient;
+import com.apus.manage_salary_demo.client.resources.dto.CurrencyDto;
 import com.apus.manage_salary_demo.common.error.BusinessException;
 import com.apus.manage_salary_demo.config.Translator;
 import com.apus.manage_salary_demo.dto.BaseDto;
@@ -22,8 +24,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -98,7 +99,39 @@ public class RewardServiceImpl implements RewardService {
 
     @Override
     public List<RewardDto> getAllDetailByIds(Set<Long> ids) {
-        return List.of();
+        List<RewardEntity> rewardEntities = rewardRepository.findAllById(ids);
+
+        Map<Long, UomDto> uomMap = buildUomMapFromRewards(rewardEntities);
+        Map<Long, CurrencyDto> currencyMap = buildCurrencyMapFromRewards(rewardEntities);
+
+        List<RewardDto> dtoList = new ArrayList<>();
+        for (RewardEntity reward : rewardEntities) {
+            RewardDto dto = rewardMapper.toDto(reward);
+            dto.setUom(uomMap.get(reward.getUomId()));
+            dto.setCurrency(currencyMap.get(reward.getCurrencyId()));
+            dtoList.add(dto);
+        }
+        return dtoList;
+    }
+
+    private Map<Long, CurrencyDto> buildCurrencyMapFromRewards(List<RewardEntity> allowances) {
+        Set<Long> currencyIds = new HashSet<>();
+        for (var reward : allowances) {
+            if (reward.getCurrencyId() != null) {
+                currencyIds.add(reward.getCurrencyId());
+            }
+        }
+        return clientHelper.buildCurrencyMap(currencyIds);
+    }
+
+    private Map<Long, UomDto> buildUomMapFromRewards(List<RewardEntity> allowances) {
+        Set<Long> uomIds = new HashSet<>();
+        for (var reward : allowances) {
+            if (reward.getUomId() != null) {
+                uomIds.add(reward.getUomId());
+            }
+        }
+        return clientHelper.buildUomMap(uomIds);
     }
 
     private void validateDuplicateCode(String code) {

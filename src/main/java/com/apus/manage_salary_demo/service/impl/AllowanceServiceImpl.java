@@ -114,7 +114,7 @@ public class AllowanceServiceImpl implements AllowanceService {
         Set<Long> currencyIds = new HashSet<>();
         for (AllowanceEntity allowance : allowances) {
             if (allowance.getCurrencyId() != null) {
-                currencyIds.add(allowance.getUomId());
+                currencyIds.add(allowance.getCurrencyId());
             }
         }
         return clientHelper.buildCurrencyMap(currencyIds);
