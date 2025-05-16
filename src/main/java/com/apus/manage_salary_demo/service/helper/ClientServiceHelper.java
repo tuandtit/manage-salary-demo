@@ -10,7 +10,7 @@ import com.apus.manage_salary_demo.client.resources.PositionClient;
 import com.apus.manage_salary_demo.client.resources.dto.CurrencyDto;
 import com.apus.manage_salary_demo.client.resources.dto.TargetDto;
 import com.apus.manage_salary_demo.common.utils.ConvertUtils;
-import com.apus.manage_salary_demo.dto.AllowanceTargetDto;
+import com.apus.manage_salary_demo.dto.ApplicableTargetDto;
 import com.apus.manage_salary_demo.dto.response.PagingResponse;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -62,23 +62,23 @@ public class ClientServiceHelper {
                 .collect(Collectors.toMap(UomDto::getId, Function.identity()));
     }
 
-    public List<AllowanceTargetDto> getAllDepartmentByIds(String ids) {
+    public List<ApplicableTargetDto> getAllDepartmentByIds(String ids) {
         return getTargetDto(departmentClient.getAllDepartmentByIds(ids));
     }
 
-    public List<AllowanceTargetDto> getAllPositionByIds(String ids) {
+    public List<ApplicableTargetDto> getAllPositionByIds(String ids) {
         return getTargetDto(positionClient.getAllPositionByIds(ids));
     }
 
-    public List<AllowanceTargetDto> getAllEmployeeByIds(String ids) {
+    public List<ApplicableTargetDto> getAllEmployeeByIds(String ids) {
         return getTargetDto(employeeClient.getAllEmployeeByIds(ids));
     }
 
-    private List<AllowanceTargetDto> getTargetDto(BaseResponse<PagingResponse<TargetDto>> allTargetByIds) {
+    private List<ApplicableTargetDto> getTargetDto(BaseResponse<PagingResponse<TargetDto>> allTargetByIds) {
         List<TargetDto> content = allTargetByIds.getData().getContent();
-        List<AllowanceTargetDto> targetDtoList = new ArrayList<>();
+        List<ApplicableTargetDto> targetDtoList = new ArrayList<>();
         for (var dto : content) {
-            targetDtoList.add(AllowanceTargetDto.builder()
+            targetDtoList.add(ApplicableTargetDto.builder()
                     .target(dto)
                     .build());
         }

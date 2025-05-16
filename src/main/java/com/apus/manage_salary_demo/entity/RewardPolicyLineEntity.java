@@ -18,13 +18,9 @@ public class RewardPolicyLineEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "reward_policy_id")
-    private RewardPolicyEntity rewardPolicyEntity;
+    private Long rewardPolicyId;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "reward_id")
-    private RewardEntity rewardEntity;
+    private Long rewardId;
 
     @Column(length = 50, nullable = false)
     private String cycle;

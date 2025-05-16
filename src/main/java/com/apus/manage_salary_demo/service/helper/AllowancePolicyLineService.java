@@ -1,4 +1,4 @@
-package com.apus.manage_salary_demo.service.impl;
+package com.apus.manage_salary_demo.service.helper;
 
 import com.apus.manage_salary_demo.common.error.BusinessException;
 import com.apus.manage_salary_demo.dto.AllowancePolicyLineDto;

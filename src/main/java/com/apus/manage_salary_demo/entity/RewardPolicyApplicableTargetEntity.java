@@ -16,9 +16,7 @@ public class RewardPolicyApplicableTargetEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "reward_policy_id")
-    private RewardPolicyEntity rewardPolicyEntity;
+    private Long rewardPolicyId;
 
     private Long targetId;
 }

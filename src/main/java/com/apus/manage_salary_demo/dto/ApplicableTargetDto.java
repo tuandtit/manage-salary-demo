@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class AllowanceTargetDto {
+public class ApplicableTargetDto {
     private Long id;
     private TargetDto target;
 }

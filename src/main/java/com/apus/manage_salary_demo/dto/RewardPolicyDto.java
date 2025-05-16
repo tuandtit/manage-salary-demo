@@ -3,6 +3,7 @@ package com.apus.manage_salary_demo.dto;
 import com.apus.manage_salary_demo.common.enums.AllowancePolicyState;
 import com.apus.manage_salary_demo.common.enums.ApplicableType;
 import com.apus.manage_salary_demo.common.enums.PolicyType;
+import com.apus.manage_salary_demo.common.enums.RewardPolicyState;
 import com.apus.manage_salary_demo.dto.validator.EnumValueOrList;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.Valid;
@@ -22,7 +23,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class AllowancePolicyDto {
+public class RewardPolicyDto {
     private Long id;
 
     @NotBlank(message = "Code must not be blank")
@@ -46,7 +47,7 @@ public class AllowancePolicyDto {
     @EnumValueOrList(name = "applicableType", enumClass = ApplicableType.class)
     private String applicableType;
 
-    @EnumValueOrList(name = "state", enumClass = AllowancePolicyState.class)
+    @EnumValueOrList(name = "state", enumClass = RewardPolicyState.class)
     private String state;
 
     private List<ApplicableTargetDto> targets;

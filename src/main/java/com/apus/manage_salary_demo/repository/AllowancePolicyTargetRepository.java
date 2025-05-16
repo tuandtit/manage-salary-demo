@@ -12,4 +12,6 @@ public interface AllowancePolicyTargetRepository extends JpaRepository<Allowance
 
     @Query("SELECT t.targetId FROM AllowancePolicyApplicableTargetEntity t WHERE t.allowancePolicyId = :policyId")
     Set<Long> getTargetIdsByPolicyId(Long policyId);
+
+    void deleteByAllowancePolicyId(Long policyId);
 }
