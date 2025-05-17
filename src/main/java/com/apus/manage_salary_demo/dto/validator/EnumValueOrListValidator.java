@@ -28,7 +28,7 @@ public class EnumValueOrListValidator implements ConstraintValidator<EnumValueOr
         boolean valid = false;
 
         if (value instanceof String str) {
-            valid = acceptedValues.contains(str.toUpperCase());
+            valid = acceptedValues.contains(str);
         } else if (value instanceof List) {
             valid = ((List<?>) value).stream()
                     .allMatch(item -> item instanceof String str && acceptedValues.contains(str.toUpperCase()));
