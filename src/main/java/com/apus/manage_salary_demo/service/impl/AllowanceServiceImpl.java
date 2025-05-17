@@ -97,8 +97,20 @@ public class AllowanceServiceImpl implements AllowanceService {
     public List<AllowanceDto> getAllDetailByIds(Set<Long> ids) {
         List<AllowanceEntity> allowanceEntities = allowanceRepository.findAllById(ids);
 
-        Map<Long, UomDto> uomMap = buildUomMapFromAllowances(allowanceEntities);
-        Map<Long, CurrencyDto> currencyMap = buildCurrencyMapFromAllowances(allowanceEntities);
+        Set<Long> currencyIds = new HashSet<>();
+        Set<Long> uomIds = new HashSet<>();
+
+        for (var allowance : allowanceEntities) {
+            if (allowance.getCurrencyId() != null) {
+                currencyIds.add(allowance.getCurrencyId());
+            }
+            if (allowance.getUomId() != null) {
+                uomIds.add(allowance.getUomId());
+            }
+        }
+
+        Map<Long, UomDto> uomMap = clientHelper.buildUomMap(uomIds);
+        Map<Long, CurrencyDto> currencyMap = clientHelper.buildCurrencyMap(currencyIds);
 
         List<AllowanceDto> dtoList = new ArrayList<>();
         for (AllowanceEntity allowance : allowanceEntities) {
@@ -108,26 +120,6 @@ public class AllowanceServiceImpl implements AllowanceService {
             dtoList.add(dto);
         }
         return dtoList;
-    }
-
-    private Map<Long, CurrencyDto> buildCurrencyMapFromAllowances(List<AllowanceEntity> allowances) {
-        Set<Long> currencyIds = new HashSet<>();
-        for (AllowanceEntity allowance : allowances) {
-            if (allowance.getCurrencyId() != null) {
-                currencyIds.add(allowance.getCurrencyId());
-            }
-        }
-        return clientHelper.buildCurrencyMap(currencyIds);
-    }
-
-    private Map<Long, UomDto> buildUomMapFromAllowances(List<AllowanceEntity> allowances) {
-        Set<Long> uomIds = new HashSet<>();
-        for (AllowanceEntity allowance : allowances) {
-            if (allowance.getUomId() != null) {
-                uomIds.add(allowance.getUomId());
-            }
-        }
-        return clientHelper.buildUomMap(uomIds);
     }
 
     private void validateDuplicateCode(String code) {

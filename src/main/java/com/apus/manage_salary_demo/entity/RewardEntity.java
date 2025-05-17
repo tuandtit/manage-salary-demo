@@ -1,8 +1,7 @@
 package com.apus.manage_salary_demo.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import com.apus.manage_salary_demo.common.enums.AllowanceRewardType;
+import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
@@ -25,8 +24,9 @@ public class RewardEntity extends AbstractAuditingEntity<Long> {
     @Column(length = 50)
     private String includeType;
 
+    @Enumerated(EnumType.STRING)
     @Column(length = 50, nullable = false)
-    private String type;
+    private AllowanceRewardType type;
 
     @Column(nullable = false)
     private Long uomId;

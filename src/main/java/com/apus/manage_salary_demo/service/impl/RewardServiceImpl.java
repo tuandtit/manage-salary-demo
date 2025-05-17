@@ -100,9 +100,20 @@ public class RewardServiceImpl implements RewardService {
     @Override
     public List<RewardDto> getAllDetailByIds(Set<Long> ids) {
         List<RewardEntity> rewardEntities = rewardRepository.findAllById(ids);
+        Set<Long> currencyIds = new HashSet<>();
+        Set<Long> uomIds = new HashSet<>();
 
-        Map<Long, UomDto> uomMap = buildUomMapFromRewards(rewardEntities);
-        Map<Long, CurrencyDto> currencyMap = buildCurrencyMapFromRewards(rewardEntities);
+        for (var reward : rewardEntities) {
+            if (reward.getCurrencyId() != null) {
+                currencyIds.add(reward.getCurrencyId());
+            }
+            if (reward.getUomId() != null) {
+                uomIds.add(reward.getUomId());
+            }
+        }
+
+        Map<Long, UomDto> uomMap = clientHelper.buildUomMap(uomIds);
+        Map<Long, CurrencyDto> currencyMap = clientHelper.buildCurrencyMap(currencyIds);
 
         List<RewardDto> dtoList = new ArrayList<>();
         for (RewardEntity reward : rewardEntities) {
@@ -112,26 +123,6 @@ public class RewardServiceImpl implements RewardService {
             dtoList.add(dto);
         }
         return dtoList;
-    }
-
-    private Map<Long, CurrencyDto> buildCurrencyMapFromRewards(List<RewardEntity> allowances) {
-        Set<Long> currencyIds = new HashSet<>();
-        for (var reward : allowances) {
-            if (reward.getCurrencyId() != null) {
-                currencyIds.add(reward.getCurrencyId());
-            }
-        }
-        return clientHelper.buildCurrencyMap(currencyIds);
-    }
-
-    private Map<Long, UomDto> buildUomMapFromRewards(List<RewardEntity> allowances) {
-        Set<Long> uomIds = new HashSet<>();
-        for (var reward : allowances) {
-            if (reward.getUomId() != null) {
-                uomIds.add(reward.getUomId());
-            }
-        }
-        return clientHelper.buildUomMap(uomIds);
     }
 
     private void validateDuplicateCode(String code) {
