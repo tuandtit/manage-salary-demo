@@ -106,6 +106,9 @@ public class PayrollServiceImpl implements PayrollService {
     public Page<PayrollDto> getAll(PayrollSearchRequest request) {
         Page<PayrollEntity> page = payrollRepository.findAll(request.specification(), request.pageable());
 
+        if (page.isEmpty())
+            return new PageImpl<>(List.of(), page.getPageable(), page.getTotalElements());
+
         Set<Long> employeeIds = new HashSet<>();
         for (var entity : page) {
             if (entity.getEmployeeId() != null) {
