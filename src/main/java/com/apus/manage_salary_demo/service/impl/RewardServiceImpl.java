@@ -1,19 +1,20 @@
 package com.apus.manage_salary_demo.service.impl;
 
-import com.apus.manage_salary_demo.client.product.UomClient;
 import com.apus.manage_salary_demo.client.product.dto.UomDto;
-import com.apus.manage_salary_demo.client.resources.CurrencyClient;
 import com.apus.manage_salary_demo.client.resources.dto.CurrencyDto;
 import com.apus.manage_salary_demo.common.error.BusinessException;
 import com.apus.manage_salary_demo.config.Translator;
 import com.apus.manage_salary_demo.dto.BaseDto;
+import com.apus.manage_salary_demo.dto.GroupRewardDto;
 import com.apus.manage_salary_demo.dto.RewardDto;
+import com.apus.manage_salary_demo.dto.SimpleDto;
 import com.apus.manage_salary_demo.dto.request.search.RewardSearchRequest;
 import com.apus.manage_salary_demo.entity.GroupRewardEntity;
 import com.apus.manage_salary_demo.entity.RewardEntity;
 import com.apus.manage_salary_demo.mapper.RewardMapper;
 import com.apus.manage_salary_demo.repository.GroupRewardRepository;
 import com.apus.manage_salary_demo.repository.RewardRepository;
+import com.apus.manage_salary_demo.service.GroupRewardService;
 import com.apus.manage_salary_demo.service.RewardService;
 import com.apus.manage_salary_demo.service.helper.ClientServiceHelper;
 import lombok.AccessLevel;
@@ -25,6 +26,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,8 +35,7 @@ import java.util.*;
 public class RewardServiceImpl implements RewardService {
     //Helper
     ClientServiceHelper clientHelper;
-    UomClient uomClient;
-    CurrencyClient currencyClient;
+    GroupRewardService groupRewardService;
 
     //Repository
     RewardRepository rewardRepository;
@@ -102,7 +104,7 @@ public class RewardServiceImpl implements RewardService {
         List<RewardEntity> rewardEntities = rewardRepository.findAllById(ids);
         Set<Long> currencyIds = new HashSet<>();
         Set<Long> uomIds = new HashSet<>();
-
+        Set<Long> groupRewardIds = new HashSet<>();
         for (var reward : rewardEntities) {
             if (reward.getCurrencyId() != null) {
                 currencyIds.add(reward.getCurrencyId());
@@ -110,19 +112,38 @@ public class RewardServiceImpl implements RewardService {
             if (reward.getUomId() != null) {
                 uomIds.add(reward.getUomId());
             }
+            if (reward.getGroupRewardId() != null) {
+                groupRewardIds.add(reward.getGroupRewardId());
+            }
         }
 
         Map<Long, UomDto> uomMap = clientHelper.buildUomMap(uomIds);
         Map<Long, CurrencyDto> currencyMap = clientHelper.buildCurrencyMap(currencyIds);
+        Map<Long, GroupRewardDto> groupRewardMap = buildGroupRewardMap(groupRewardIds);
 
         List<RewardDto> dtoList = new ArrayList<>();
         for (RewardEntity reward : rewardEntities) {
             RewardDto dto = rewardMapper.toDto(reward);
             dto.setUom(uomMap.get(reward.getUomId()));
             dto.setCurrency(currencyMap.get(reward.getCurrencyId()));
+            GroupRewardDto groupRewardDto = groupRewardMap.get(reward.getGroupRewardId());
+            dto.setGroupReward(SimpleDto.builder()
+                    .id(groupRewardDto.getId())
+                    .code(groupRewardDto.getCode())
+                    .name(groupRewardDto.getName())
+                    .build());
             dtoList.add(dto);
         }
         return dtoList;
+    }
+
+    private Map<Long, GroupRewardDto> buildGroupRewardMap(Set<Long> groupRewardIds) {
+        if (groupRewardIds == null || groupRewardIds.isEmpty()) return Collections.emptyMap();
+
+        List<GroupRewardDto> content = groupRewardService.getAllDetailByIds(groupRewardIds);
+
+        return content.stream()
+                .collect(Collectors.toMap(GroupRewardDto::getId, Function.identity()));
     }
 
     private void validateDuplicateCode(String code) {

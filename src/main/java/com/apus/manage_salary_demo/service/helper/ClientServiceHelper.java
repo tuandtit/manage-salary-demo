@@ -8,7 +8,8 @@ import com.apus.manage_salary_demo.client.resources.DepartmentClient;
 import com.apus.manage_salary_demo.client.resources.EmployeeClient;
 import com.apus.manage_salary_demo.client.resources.PositionClient;
 import com.apus.manage_salary_demo.client.resources.dto.CurrencyDto;
-import com.apus.manage_salary_demo.client.resources.dto.TargetDto;
+import com.apus.manage_salary_demo.client.resources.dto.EmployeeDto;
+import com.apus.manage_salary_demo.dto.SimpleDto;
 import com.apus.manage_salary_demo.common.utils.ConvertUtils;
 import com.apus.manage_salary_demo.dto.ApplicableTargetDto;
 import com.apus.manage_salary_demo.dto.response.PagingResponse;
@@ -71,15 +72,38 @@ public class ClientServiceHelper {
     }
 
     public List<ApplicableTargetDto> getAllEmployeeByIds(String ids) {
-        return getTargetDto(employeeClient.getAllEmployeeByIds(ids));
+        return getEmployeeDto(employeeClient.getAllEmployeeByIds(ids));
     }
 
-    private List<ApplicableTargetDto> getTargetDto(BaseResponse<PagingResponse<TargetDto>> allTargetByIds) {
-        List<TargetDto> content = allTargetByIds.getData().getContent();
+    public List<EmployeeDto> getAllDetailEmployeeByIds(String ids) {
+        return employeeClient.getAllEmployeeByIds(ids).getData().getContent();
+    }
+
+    public EmployeeDto getEmployeeById(Long id) {
+        return employeeClient.getEmployeeById(id).getData();
+    }
+
+    private List<ApplicableTargetDto> getTargetDto(BaseResponse<PagingResponse<SimpleDto>> allTargetByIds) {
+        List<SimpleDto> content = allTargetByIds.getData().getContent();
         List<ApplicableTargetDto> targetDtoList = new ArrayList<>();
         for (var dto : content) {
             targetDtoList.add(ApplicableTargetDto.builder()
                     .target(dto)
+                    .build());
+        }
+        return targetDtoList;
+    }
+
+    private List<ApplicableTargetDto> getEmployeeDto(BaseResponse<PagingResponse<EmployeeDto>> allTargetByIds) {
+        List<EmployeeDto> content = allTargetByIds.getData().getContent();
+        List<ApplicableTargetDto> targetDtoList = new ArrayList<>();
+        for (var dto : content) {
+            targetDtoList.add(ApplicableTargetDto.builder()
+                    .target(SimpleDto.builder()
+                            .id(dto.getId())
+                            .code(dto.getCode())
+                            .name(dto.getName())
+                            .build())
                     .build());
         }
         return targetDtoList;

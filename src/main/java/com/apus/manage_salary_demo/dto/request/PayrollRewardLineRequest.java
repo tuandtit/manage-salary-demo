@@ -19,6 +19,7 @@ import java.math.BigDecimal;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PayrollRewardLineRequest {
+    private Long id;
     @Valid
     private BaseDto groupReward;
     @Valid

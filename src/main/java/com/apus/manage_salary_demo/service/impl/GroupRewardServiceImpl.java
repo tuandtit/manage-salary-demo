@@ -17,6 +17,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Set;
+
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -87,6 +90,12 @@ public class GroupRewardServiceImpl implements GroupRewardService {
     public Page<GroupRewardDto> getAll(GroupRewardSearchRequest request) {
         return rewardRepository.findAll(request.specification(), request.pageable())
                 .map(rewardMapper::toDto);
+    }
+
+    @Override
+    public List<GroupRewardDto> getAllDetailByIds(Set<Long> ids) {
+        List<GroupRewardEntity> groupRewardEntities = rewardRepository.findAllById(ids);
+        return rewardMapper.toDto(groupRewardEntities);
     }
 
     private void validateDuplicateCode(String code) {

@@ -9,7 +9,7 @@ import org.springframework.data.domain.Page;
 public interface PayrollService {
     BaseDto create(PayrollRequest dto);
 
-    BaseDto update(PayrollDto dto);
+    BaseDto update(PayrollRequest dto);
 
     void delete(Long id);
 

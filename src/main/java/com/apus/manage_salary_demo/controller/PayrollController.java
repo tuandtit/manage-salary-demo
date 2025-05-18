@@ -27,7 +27,7 @@ public class PayrollController {
     }
 
     @PutMapping
-    public Response<BaseDto> update(@Valid @RequestBody PayrollDto dto) {
+    public Response<BaseDto> update(@Valid @RequestBody PayrollRequest dto) {
         return Response.ok(payrollService.update(dto));
     }
 

@@ -37,7 +37,7 @@ public class AllowanceDto {
     List<String> includeTypes;
 
     @NotNull(message = "groupAllowance must be not null")
-    private BaseDto groupAllowance;
+    private SimpleDto groupAllowance;
 
     @Valid
     private UomDto uom;

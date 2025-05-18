@@ -6,6 +6,8 @@ import com.apus.manage_salary_demo.common.error.BusinessException;
 import com.apus.manage_salary_demo.config.Translator;
 import com.apus.manage_salary_demo.dto.AllowanceDto;
 import com.apus.manage_salary_demo.dto.BaseDto;
+import com.apus.manage_salary_demo.dto.GroupAllowanceDto;
+import com.apus.manage_salary_demo.dto.SimpleDto;
 import com.apus.manage_salary_demo.dto.request.search.AllowanceSearchRequest;
 import com.apus.manage_salary_demo.entity.AllowanceEntity;
 import com.apus.manage_salary_demo.entity.GroupAllowanceEntity;
@@ -13,6 +15,7 @@ import com.apus.manage_salary_demo.mapper.AllowanceMapper;
 import com.apus.manage_salary_demo.repository.AllowanceRepository;
 import com.apus.manage_salary_demo.repository.GroupAllowanceRepository;
 import com.apus.manage_salary_demo.service.AllowanceService;
+import com.apus.manage_salary_demo.service.GroupAllowanceService;
 import com.apus.manage_salary_demo.service.helper.ClientServiceHelper;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +26,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +35,7 @@ import java.util.*;
 public class AllowanceServiceImpl implements AllowanceService {
     //Helper
     ClientServiceHelper clientHelper;
+    GroupAllowanceService groupAllowanceService;
 
     //Repository
     AllowanceRepository allowanceRepository;
@@ -99,6 +105,7 @@ public class AllowanceServiceImpl implements AllowanceService {
 
         Set<Long> currencyIds = new HashSet<>();
         Set<Long> uomIds = new HashSet<>();
+        Set<Long> groupAllowanceIds = new HashSet<>();
 
         for (var allowance : allowanceEntities) {
             if (allowance.getCurrencyId() != null) {
@@ -107,19 +114,38 @@ public class AllowanceServiceImpl implements AllowanceService {
             if (allowance.getUomId() != null) {
                 uomIds.add(allowance.getUomId());
             }
+            if (allowance.getGroupAllowanceId() != null) {
+                groupAllowanceIds.add(allowance.getGroupAllowanceId());
+            }
         }
 
         Map<Long, UomDto> uomMap = clientHelper.buildUomMap(uomIds);
         Map<Long, CurrencyDto> currencyMap = clientHelper.buildCurrencyMap(currencyIds);
+        Map<Long, GroupAllowanceDto> groupAllowanceMap = buildGroupAllowanceMap(groupAllowanceIds);
 
         List<AllowanceDto> dtoList = new ArrayList<>();
         for (AllowanceEntity allowance : allowanceEntities) {
             AllowanceDto dto = allowanceMapper.toDto(allowance);
             dto.setUom(uomMap.get(allowance.getUomId()));
             dto.setCurrency(currencyMap.get(allowance.getCurrencyId()));
+            GroupAllowanceDto groupAllowanceDto = groupAllowanceMap.get(allowance.getGroupAllowanceId());
+            dto.setGroupAllowance(SimpleDto.builder()
+                    .id(groupAllowanceDto.getId())
+                    .code(groupAllowanceDto.getCode())
+                    .name(groupAllowanceDto.getName())
+                    .build());
             dtoList.add(dto);
         }
         return dtoList;
+    }
+
+    private Map<Long, GroupAllowanceDto> buildGroupAllowanceMap(Set<Long> groupAllowanceIds) {
+        if (groupAllowanceIds == null || groupAllowanceIds.isEmpty()) return Collections.emptyMap();
+
+        List<GroupAllowanceDto> content = groupAllowanceService.getAllDetailByIds(groupAllowanceIds);
+
+        return content.stream()
+                .collect(Collectors.toMap(GroupAllowanceDto::getId, Function.identity()));
     }
 
     private void validateDuplicateCode(String code) {

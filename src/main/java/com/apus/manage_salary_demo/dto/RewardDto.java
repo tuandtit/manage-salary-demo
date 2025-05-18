@@ -37,7 +37,7 @@ public class RewardDto {
     List<String> includeTypes;
 
     @NotNull(message = "groupAllowance must be not null")
-    private BaseDto groupReward;
+    private SimpleDto groupReward;
 
     @Valid
     private UomDto uom;

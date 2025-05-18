@@ -1,6 +1,5 @@
 package com.apus.manage_salary_demo.dto;
 
-import com.apus.manage_salary_demo.client.resources.dto.TargetDto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,9 +16,9 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PayrollDto {
     private Long id;
-    private TargetDto employee;
-    private TargetDto department;
-    private TargetDto position;
+    private SimpleDto employee;
+    private SimpleDto department;
+    private SimpleDto position;
     private String type;
     private String cycle;
     private BigDecimal totalAllowanceAmount;

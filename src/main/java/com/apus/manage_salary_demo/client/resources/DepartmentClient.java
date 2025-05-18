@@ -1,7 +1,7 @@
 package com.apus.manage_salary_demo.client.resources;
 
 import com.apus.manage_salary_demo.client.dto.BaseResponse;
-import com.apus.manage_salary_demo.client.resources.dto.TargetDto;
+import com.apus.manage_salary_demo.dto.SimpleDto;
 import com.apus.manage_salary_demo.config.FeignClientConfig;
 import com.apus.manage_salary_demo.dto.response.PagingResponse;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -15,5 +15,5 @@ import org.springframework.web.bind.annotation.RequestParam;
 )
 public interface DepartmentClient {
     @GetMapping("/api/v1/department/list")
-    BaseResponse<PagingResponse<TargetDto>> getAllDepartmentByIds(@RequestParam String ids);
+    BaseResponse<PagingResponse<SimpleDto>> getAllDepartmentByIds(@RequestParam String ids);
 }

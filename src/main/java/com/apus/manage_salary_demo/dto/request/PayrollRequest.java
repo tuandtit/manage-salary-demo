@@ -1,6 +1,6 @@
 package com.apus.manage_salary_demo.dto.request;
 
-import com.apus.manage_salary_demo.client.resources.dto.TargetDto;
+import com.apus.manage_salary_demo.dto.SimpleDto;
 import com.apus.manage_salary_demo.common.enums.Cycle;
 import com.apus.manage_salary_demo.common.enums.PayrollType;
 import com.apus.manage_salary_demo.dto.validator.EnumValueOrList;
@@ -23,11 +23,11 @@ import java.util.List;
 public class PayrollRequest {
     private Long id;
     @Valid
-    private TargetDto employee;
+    private SimpleDto employee;
     @Valid
-    private TargetDto department;
+    private SimpleDto department;
     @Valid
-    private TargetDto position;
+    private SimpleDto position;
 
     @NotNull(message = "type must be not null")
     @EnumValueOrList(name = "type", enumClass = PayrollType.class)

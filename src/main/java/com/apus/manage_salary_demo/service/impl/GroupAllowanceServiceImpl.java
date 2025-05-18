@@ -17,6 +17,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Set;
+
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -89,6 +92,12 @@ public class GroupAllowanceServiceImpl implements GroupAllowanceService {
         return groupAllowanceRepository.findAll(request.specification(), request.pageable())
                 .map(allowanceMapper::toDto);
 
+    }
+
+    @Override
+    public List<GroupAllowanceDto> getAllDetailByIds(Set<Long> ids) {
+        List<GroupAllowanceEntity> groupAllowanceEntities = groupAllowanceRepository.findAllById(ids);
+        return allowanceMapper.toDto(groupAllowanceEntities);
     }
 
     private void validateDuplicateCode(String code) {
