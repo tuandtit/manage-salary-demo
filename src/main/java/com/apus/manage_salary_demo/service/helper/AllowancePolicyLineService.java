@@ -45,6 +45,10 @@ public class AllowancePolicyLineService {
                 }).toList();
     }
 
+    public void deleteByPolicyId(Long policyId) {
+        lineRepository.deleteByAllowancePolicyId(policyId);
+    }
+
     @Transactional
     public void updateLines(Long policyId, List<AllowancePolicyLineDto> incomingDtos) {
         List<AllowancePolicyLineEntity> currentEntities = getLinesByPolicyId(policyId);

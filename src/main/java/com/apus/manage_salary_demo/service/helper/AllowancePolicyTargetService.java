@@ -26,6 +26,10 @@ public class AllowancePolicyTargetService {
         targetRepository.saveAll(entities);
     }
 
+    public void deleteByPolicyId(Long policyId) {
+        targetRepository.deleteByAllowancePolicyId(policyId);
+    }
+
     @Transactional
     public void updateTargets(Long policyId, List<ApplicableTargetDto> incomingDtos) {
         if (policyId == null) return;

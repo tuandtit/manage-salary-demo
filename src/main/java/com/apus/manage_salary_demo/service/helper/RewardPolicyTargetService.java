@@ -26,6 +26,10 @@ public class RewardPolicyTargetService {
         targetRepository.saveAll(entities);
     }
 
+    public void deleteByPolicyId(Long policyId) {
+        targetRepository.deleteByRewardPolicyId(policyId);
+    }
+
     @Transactional
     public void updateTargets(Long policyId, List<ApplicableTargetDto> incomingDtos) {
         if (policyId == null) return;

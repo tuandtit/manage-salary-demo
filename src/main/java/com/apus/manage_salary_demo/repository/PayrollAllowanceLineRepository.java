@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface PayrollAllowanceLineRepository extends JpaRepository<PayrollAllowanceLineEntity, Long> {
     List<PayrollAllowanceLineEntity> findByPayrollId(Long payrollId);
+
+    void deleteByPayrollId(Long payrollId);
 }

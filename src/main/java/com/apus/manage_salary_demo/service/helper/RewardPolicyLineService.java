@@ -45,6 +45,10 @@ public class RewardPolicyLineService {
                 }).toList();
     }
 
+    public void deleteByPolicyId(Long policyId) {
+        lineRepository.deleteByRewardPolicyId(policyId);
+    }
+
     @Transactional
     public void updateLines(Long policyId, List<RewardPolicyLineDto> incomingDtos) {
         List<RewardPolicyLineEntity> currentEntities = getLinesByPolicyId(policyId);

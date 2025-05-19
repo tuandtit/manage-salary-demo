@@ -102,7 +102,10 @@ public class AllowancePolicyServiceImpl implements AllowancePolicyService {
     }
 
     @Override
+    @Transactional
     public void delete(Long id) {
+        lineService.deleteByPolicyId(id);
+        targetService.deleteByPolicyId(id);
         policyRepository.deleteById(id);
     }
 

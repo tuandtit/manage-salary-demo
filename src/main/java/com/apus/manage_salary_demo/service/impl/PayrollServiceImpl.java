@@ -77,7 +77,10 @@ public class PayrollServiceImpl implements PayrollService {
     }
 
     @Override
+    @Transactional
     public void delete(Long id) {
+        allowanceLineService.deleteByPayrollId(id);
+        rewardLineService.deleteByPayrollId(id);
         payrollRepository.deleteById(id);
     }
 

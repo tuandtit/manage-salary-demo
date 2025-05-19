@@ -70,6 +70,10 @@ public class PayrollRewardLineService {
         return total;
     }
 
+    public void deleteByPayrollId(Long payrollId) {
+        lineRepository.deleteByPayrollId(payrollId);
+    }
+
     @Transactional
     public void updateLines(Long payrollId, List<PayrollRewardLineRequest> incomingDtos) {
         List<PayrollRewardLineEntity> currentEntities = lineRepository.findByPayrollId(payrollId);

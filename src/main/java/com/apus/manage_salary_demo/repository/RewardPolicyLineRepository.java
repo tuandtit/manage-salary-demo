@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface RewardPolicyLineRepository extends JpaRepository<RewardPolicyLineEntity, Long> {
     List<RewardPolicyLineEntity> findByRewardPolicyId(Long policyId);
+
+    void deleteByRewardPolicyId(Long policyId);
 }
