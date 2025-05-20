@@ -14,6 +14,7 @@ public class ConvertUtils {
             return "";
         }
         return longs.stream()
+                .sorted()
                 .map(String::valueOf)
                 .collect(Collectors.joining(","));
     }

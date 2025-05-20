@@ -9,13 +9,14 @@ import com.apus.manage_salary_demo.client.resources.EmployeeClient;
 import com.apus.manage_salary_demo.client.resources.PositionClient;
 import com.apus.manage_salary_demo.client.resources.dto.CurrencyDto;
 import com.apus.manage_salary_demo.client.resources.dto.EmployeeDto;
-import com.apus.manage_salary_demo.dto.SimpleDto;
 import com.apus.manage_salary_demo.common.utils.ConvertUtils;
 import com.apus.manage_salary_demo.dto.ApplicableTargetDto;
+import com.apus.manage_salary_demo.dto.SimpleDto;
 import com.apus.manage_salary_demo.dto.response.PagingResponse;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -33,14 +34,17 @@ public class ClientServiceHelper {
     PositionClient positionClient;
     EmployeeClient employeeClient;
 
+    @Cacheable(value = "uomDtoCache", key = "#id")
     public UomDto getUomById(Long id) {
         return uomClient.getUomById(id).getData();
     }
 
+    @Cacheable(value = "currencyDtoCache", key = "#id")
     public CurrencyDto getCurrencyById(Long id) {
         return currencyClient.getCurrencyById(id).getData();
     }
 
+    @Cacheable(value = "currencyMapCache", key = "T(com.apus.manage_salary_demo.common.utils.ConvertUtils).joinLongSet(#currencyIds)")
     public Map<Long, CurrencyDto> buildCurrencyMap(Set<Long> currencyIds) {
         if (currencyIds == null || currencyIds.isEmpty()) return Collections.emptyMap();
 
@@ -52,6 +56,7 @@ public class ClientServiceHelper {
                 .collect(Collectors.toMap(CurrencyDto::getId, Function.identity()));
     }
 
+    @Cacheable(value = "uomMapCache", key = "T(com.apus.manage_salary_demo.common.utils.ConvertUtils).joinLongSet(#uomIds)")
     public Map<Long, UomDto> buildUomMap(Set<Long> uomIds) {
         if (uomIds == null || uomIds.isEmpty()) return Collections.emptyMap();
 
@@ -63,14 +68,18 @@ public class ClientServiceHelper {
                 .collect(Collectors.toMap(UomDto::getId, Function.identity()));
     }
 
+
+    @Cacheable(value = "departmentDtoListCache", key = "T(com.apus.manage_salary_demo.common.utils.ConvertUtils).joinLongSet(#ids)")
     public List<ApplicableTargetDto> getAllDepartmentByIds(String ids) {
         return getTargetDto(departmentClient.getAllDepartmentByIds(ids));
     }
 
+    @Cacheable(value = "positionDtoListCache", key = "T(com.apus.manage_salary_demo.common.utils.ConvertUtils).joinLongSet(#ids)")
     public List<ApplicableTargetDto> getAllPositionByIds(String ids) {
         return getTargetDto(positionClient.getAllPositionByIds(ids));
     }
 
+    @Cacheable(value = "employeeDtoListCache", key = "T(com.apus.manage_salary_demo.common.utils.ConvertUtils).joinLongSet(#ids)")
     public List<ApplicableTargetDto> getAllEmployeeByIds(String ids) {
         return getEmployeeDto(employeeClient.getAllEmployeeByIds(ids));
     }
