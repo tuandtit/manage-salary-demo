@@ -15,7 +15,8 @@ import java.math.BigDecimal;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class AllowanceLineDto {
     private Long id;
-    private AllowanceDto allowance;
+    private SimpleDto groupAllowance;
+    private SimpleAllowanceDto allowance;
     private String amountItem;
     private BigDecimal amount;
     private BigDecimal taxableAmount;

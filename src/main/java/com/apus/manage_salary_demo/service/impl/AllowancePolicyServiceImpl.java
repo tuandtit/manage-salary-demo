@@ -2,7 +2,6 @@ package com.apus.manage_salary_demo.service.impl;
 
 import com.apus.manage_salary_demo.common.enums.ApplicableType;
 import com.apus.manage_salary_demo.common.error.BusinessException;
-import com.apus.manage_salary_demo.common.utils.ConvertUtils;
 import com.apus.manage_salary_demo.config.Translator;
 import com.apus.manage_salary_demo.dto.AllowanceDto;
 import com.apus.manage_salary_demo.dto.AllowancePolicyDto;
@@ -89,7 +88,8 @@ public class AllowancePolicyServiceImpl implements AllowancePolicyService {
             targetService.updateTargets(dto.getId(), List.of());
         }
 
-        lineService.updateLines(dto.getId(), dto.getLines());
+        if (!dto.getLines().isEmpty())
+            lineService.updateLines(dto.getId(), dto.getLines());
 
         return BaseDto.builder()
                 .id(saved.getId())
@@ -116,12 +116,11 @@ public class AllowancePolicyServiceImpl implements AllowancePolicyService {
 
         if (entity.getApplicableType() != null && !entity.getApplicableType().equals(ApplicableType.ALL)) {
             Set<Long> targetIds = targetService.getTargetIdsByPolicyId(entity.getId());
-            String ids = ConvertUtils.joinLongSet(targetIds);
 
             switch (entity.getApplicableType()) {
-                case DEPARTMENT -> dto.setTargets(clientHelper.getAllDepartmentByIds(ids));
-                case EMPLOYEE -> dto.setTargets(clientHelper.getAllEmployeeByIds(ids));
-                case POSITION -> dto.setTargets(clientHelper.getAllPositionByIds(ids));
+                case DEPARTMENT -> dto.setTargets(clientHelper.getAllDepartmentByIds(targetIds));
+                case EMPLOYEE -> dto.setTargets(clientHelper.getAllEmployeeByIds(targetIds));
+                case POSITION -> dto.setTargets(clientHelper.getAllPositionByIds(targetIds));
                 default -> throw new BusinessException("400", "Applicable Type not valid");
             }
         }

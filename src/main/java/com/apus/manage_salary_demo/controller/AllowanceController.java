@@ -13,6 +13,9 @@ import lombok.experimental.FieldDefaults;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.Set;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/allowance")
@@ -42,9 +45,12 @@ public class AllowanceController {
     }
 
     @GetMapping("/list")
-    public Response<PagingResponse<AllowanceDto>> getAll(
-            @ParameterObject AllowanceSearchRequest request
-    ) {
+    public Response<PagingResponse<AllowanceDto>> getAll(@ParameterObject AllowanceSearchRequest request) {
         return Response.ok(PagingResponse.from(allowanceService.getAll(request)));
+    }
+
+    @GetMapping("/get-all")
+    public Response<List<AllowanceDto>> getAllDetail(@RequestParam("id") Set<Long> id) {
+        return Response.ok(allowanceService.getAllDetailByIds(id));
     }
 }

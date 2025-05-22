@@ -1,21 +1,24 @@
 package com.apus.manage_salary_demo.service.helper;
 
+import com.apus.manage_salary_demo.client.resources.dto.CurrencyDto;
 import com.apus.manage_salary_demo.common.error.BusinessException;
-import com.apus.manage_salary_demo.dto.AllowanceDto;
+import com.apus.manage_salary_demo.common.utils.ConvertUtils;
+import com.apus.manage_salary_demo.config.Translator;
 import com.apus.manage_salary_demo.dto.AllowanceLineDto;
 import com.apus.manage_salary_demo.dto.PayrollAllowanceLineDto;
+import com.apus.manage_salary_demo.dto.SimpleAllowanceDto;
 import com.apus.manage_salary_demo.dto.SimpleDto;
-import com.apus.manage_salary_demo.dto.request.PayrollAllowanceLineRequest;
-import com.apus.manage_salary_demo.dto.response.PayrollAllowanceLineResponse;
 import com.apus.manage_salary_demo.entity.AllowanceEntity;
+import com.apus.manage_salary_demo.entity.GroupAllowanceEntity;
 import com.apus.manage_salary_demo.entity.PayrollAllowanceLineEntity;
 import com.apus.manage_salary_demo.mapper.PayrollAllowanceLineMapper;
 import com.apus.manage_salary_demo.repository.AllowanceRepository;
+import com.apus.manage_salary_demo.repository.GroupAllowanceRepository;
 import com.apus.manage_salary_demo.repository.PayrollAllowanceLineRepository;
-import com.apus.manage_salary_demo.service.AllowanceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -28,63 +31,33 @@ public class PayrollAllowanceLineService {
 
     private final PayrollAllowanceLineRepository lineRepository;
     private final AllowanceRepository allowanceRepository;
+    private final GroupAllowanceRepository groupAllowanceRepository;
     private final PayrollAllowanceLineMapper lineMapper;
-    private final AllowanceService allowanceService;
-
-
-    @Transactional
-    public void saveLines(Long payrollId, List<PayrollAllowanceLineRequest> lines) {
-        if (payrollId == null || lines == null || lines.isEmpty()) return;
-
-        List<PayrollAllowanceLineEntity> entities = buildLines(payrollId, lines);
-
-        lineRepository.saveAll(entities);
-    }
-
-    private List<PayrollAllowanceLineEntity> buildLines(Long payrollId, List<PayrollAllowanceLineRequest> lines) {
-        return lines.stream()
-                .map(dto -> {
-                    PayrollAllowanceLineEntity entity = lineMapper.toEntity(dto);
-                    var allowanceEntity = checkValidGroupAndAllowance(dto);
-                    entity.setPayrollId(payrollId);
-                    entity.setGroupAllowanceId(allowanceEntity.getGroupAllowanceId());
-                    entity.setAllowanceId(allowanceEntity.getId());
-                    return entity;
-                }).toList();
-    }
-
-    private AllowanceEntity checkValidGroupAndAllowance(PayrollAllowanceLineRequest dto) {
-        AllowanceEntity allowanceEntity = existsAllowance(dto.getAllowance().getId());
-        if (!Objects.equals(allowanceEntity.getGroupAllowanceId(), dto.getGroupAllowance().getId()))
-            throw new BusinessException("400", "The allowance with ID: " + allowanceEntity.getId() + " does not belong to the allowance group with ID: " + dto.getGroupAllowance().getId());
-        return allowanceEntity;
-    }
-
-    public BigDecimal getTotalAllowanceAmount(List<PayrollAllowanceLineRequest> lines) {
-        BigDecimal total = BigDecimal.ZERO;
-        if (lines.isEmpty()) return total;
-
-        for (var line : lines) {
-            if (line != null)
-                total = total.add(line.getAmount());
-
-        }
-
-        return total;
-    }
-
-    public void deleteByPayrollId(Long payrollId) {
-        lineRepository.deleteByPayrollId(payrollId);
-    }
+    private final ClientServiceHelper clientHelper;
+    private final ConvertUtils convertUtils;
+    private final Translator translator;
 
     @Transactional
-    public void updateLines(Long payrollId, List<PayrollAllowanceLineRequest> incomingDtos) {
-        List<PayrollAllowanceLineEntity> currentEntities = lineRepository.findByPayrollId(payrollId);
+    public void createOrUpdateLines(Long payrollId, Long groupAllowanceId, List<AllowanceLineDto> allowanceLineDtos) {
+        if (ObjectUtils.isEmpty(allowanceLineDtos))
+            deleteByPayrollId(payrollId);
+
+        List<PayrollAllowanceLineEntity> currentEntities = lineRepository.findByPayrollIdAndGroupAllowanceId(payrollId, groupAllowanceId);
         Map<Long, PayrollAllowanceLineEntity> currentMap = mapEntitiesById(currentEntities);
-        Set<Long> incomingIds = extractIdsFromDtos(incomingDtos);
 
-        deleteRemovedEntities(currentEntities, incomingIds);
-        upsertEntities(payrollId, incomingDtos, currentMap);
+        Set<Long> incomingIds = extractIdsFromDtos(allowanceLineDtos);
+        if (!incomingIds.isEmpty())
+            deleteRemovedEntities(currentEntities, incomingIds);
+
+        List<PayrollAllowanceLineEntity> entities = new ArrayList<>();
+        for (var allowanceLineDto : allowanceLineDtos) {
+            if (Objects.isNull(allowanceLineDto.getId())) {
+                entities.add(buildLine(payrollId, groupAllowanceId, allowanceLineDto));
+            } else {
+                entities.add(updateLine(groupAllowanceId, allowanceLineDto, currentMap));
+            }
+        }
+        lineRepository.saveAll(entities);
     }
 
     private Map<Long, PayrollAllowanceLineEntity> mapEntitiesById(List<PayrollAllowanceLineEntity> entities) {
@@ -92,11 +65,29 @@ public class PayrollAllowanceLineService {
                 .collect(Collectors.toMap(PayrollAllowanceLineEntity::getId, Function.identity()));
     }
 
-    private Set<Long> extractIdsFromDtos(List<PayrollAllowanceLineRequest> dtos) {
+    private Set<Long> extractIdsFromDtos(List<AllowanceLineDto> dtos) {
         return dtos.stream()
-                .map(PayrollAllowanceLineRequest::getId)
+                .map(AllowanceLineDto::getId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
+    }
+
+    private PayrollAllowanceLineEntity buildLine(Long payrollId, Long groupAllowanceId, AllowanceLineDto allowanceLine) {
+        PayrollAllowanceLineEntity entity = lineMapper.toEntity(allowanceLine);
+        var allowanceEntity = checkValidGroupAndAllowance(groupAllowanceId, allowanceLine.getAllowance().getId());
+        entity.setPayrollId(payrollId);
+        entity.setGroupAllowanceId(allowanceEntity.getGroupAllowanceId());
+        entity.setAllowanceId(allowanceEntity.getId());
+        return entity;
+    }
+
+    private PayrollAllowanceLineEntity updateLine(Long groupAllowanceId, AllowanceLineDto allowanceLineDto, Map<Long, PayrollAllowanceLineEntity> currentMap) {
+        PayrollAllowanceLineEntity entity = currentMap.get(allowanceLineDto.getId());
+        if (Objects.isNull(entity))
+            throw new BusinessException("404", "PayrollAllowanceLineEntity " + translator.toLocale("error.resource.not.found") + allowanceLineDto.getId());
+        checkValidGroupAndAllowance(groupAllowanceId, allowanceLineDto.getAllowance().getId());
+        lineMapper.update(allowanceLineDto, entity);
+        return entity;
     }
 
     private void deleteRemovedEntities(List<PayrollAllowanceLineEntity> currentEntities, Set<Long> incomingIds) {
@@ -107,49 +98,51 @@ public class PayrollAllowanceLineService {
         }
     }
 
-    private void upsertEntities(Long payrollId, List<PayrollAllowanceLineRequest> dtos, Map<Long, PayrollAllowanceLineEntity> currentMap) {
-        for (var dto : dtos) {
-            if (dto.getId() != null && currentMap.containsKey(dto.getId())) {
-                updateExistingEntity(dto, currentMap.get(dto.getId()));
-            } else {
-                createNewEntity(payrollId, dto);
+    private AllowanceEntity checkValidGroupAndAllowance(Long groupAllowanceId, Long allowanceId) {
+        AllowanceEntity allowanceEntity = existsAllowance(allowanceId);
+        if (!Objects.equals(allowanceEntity.getGroupAllowanceId(), groupAllowanceId))
+            throw new BusinessException("400", "The allowance with ID: " + allowanceEntity.getId() + " does not belong to the allowance group with ID: " + groupAllowanceId);
+        return allowanceEntity;
+    }
+
+    public BigDecimal getTotalAllowanceAmount(List<PayrollAllowanceLineDto> lines) {
+        BigDecimal total = BigDecimal.ZERO;
+        if (lines.isEmpty()) return total;
+
+        for (var line : lines) {
+            for (var allowance : line.getAllowanceLines()) {
+                if (allowance != null)
+                    total = total.add(allowance.getAmount());
             }
         }
+
+        return total;
     }
 
-    private void updateExistingEntity(PayrollAllowanceLineRequest dto, PayrollAllowanceLineEntity entity) {
-        lineMapper.update(dto, entity);
-        if (dto.getAllowance().getId() != null) {
-            AllowanceEntity allowanceEntity = checkValidGroupAndAllowance(dto);
-            entity.setAllowanceId(allowanceEntity.getId());
-            entity.setGroupAllowanceId(allowanceEntity.getGroupAllowanceId());
-        }
-        lineRepository.save(entity);
-    }
-
-    private void createNewEntity(Long payrollId, PayrollAllowanceLineRequest dto) {
-        PayrollAllowanceLineEntity newEntity = lineMapper.toEntity(dto);
-        var allowanceEntity = checkValidGroupAndAllowance(dto);
-        newEntity.setPayrollId(payrollId);
-        newEntity.setGroupAllowanceId(allowanceEntity.getGroupAllowanceId());
-        newEntity.setAllowanceId(allowanceEntity.getId());
-        lineRepository.save(newEntity);
+    public void deleteByPayrollId(Long payrollId) {
+        lineRepository.deleteByPayrollId(payrollId);
     }
 
     public List<PayrollAllowanceLineDto> getPayrollAllowanceLineDtosByPayrollId(Long payrollId) {
-        // Lấy danh sách entity từ service
         List<PayrollAllowanceLineEntity> lines = lineRepository.findByPayrollId(payrollId);
+        Set<Long> allowanceIds = new HashSet<>();
+        Set<Long> groupAllowanceIds = new HashSet<>();
+        for (var line : lines) {
+            if (line.getAllowanceId() != null) {
+                allowanceIds.add(line.getAllowanceId());
+            }
+            if (line.getGroupAllowanceId() != null) {
+                groupAllowanceIds.add(line.getGroupAllowanceId());
+            }
+        }
+        Map<Long, SimpleAllowanceDto> allowanceMap = buildAllowanceMapFromLines(allowanceIds);
+        Map<Long, SimpleDto> groupAllowanceMap = buildGroupAllowanceMapFromLines(groupAllowanceIds);
 
-        // Xây allowanceMap (mỗi allowanceId -> AllowanceDto)
-        Map<Long, AllowanceDto> allowanceMap = buildAllowanceMapFromLines(lines);
-
-        // Chuyển thành List<PayrollAllowanceLineResponse>
-        List<PayrollAllowanceLineResponse> responseList = new ArrayList<>();
+        List<AllowanceLineDto> responseList = new ArrayList<>();
         for (PayrollAllowanceLineEntity line : lines) {
-            PayrollAllowanceLineResponse response = lineMapper.toDto(line);
-            AllowanceDto allowance = allowanceMap.get(line.getAllowanceId());
-            response.setAllowance(allowance);
-            response.setGroupAllowance(allowance.getGroupAllowance());
+            AllowanceLineDto response = lineMapper.toDto(line);
+            response.setGroupAllowance(groupAllowanceMap.get(line.getGroupAllowanceId()));
+            response.setAllowance(allowanceMap.get(line.getAllowanceId()));
             responseList.add(response);
         }
 
@@ -157,25 +150,56 @@ public class PayrollAllowanceLineService {
         return mapToGroupedDtos(responseList);
     }
 
-    private List<PayrollAllowanceLineDto> mapToGroupedDtos(List<PayrollAllowanceLineResponse> responses) {
-        if (responses == null || responses.isEmpty()) return Collections.emptyList();
+    private Map<Long, SimpleDto> buildGroupAllowanceMapFromLines(Set<Long> groupAllowanceIds) {
+        List<GroupAllowanceEntity> groupAllowanceEntities = groupAllowanceRepository.findAllById(groupAllowanceIds);
+        List<SimpleDto> content = new ArrayList<>();
+        for (var groupAllowance : groupAllowanceEntities) {
+            content.add(SimpleDto.builder()
+                    .id(groupAllowance.getId())
+                    .code(groupAllowance.getCode())
+                    .name(groupAllowance.getName())
+                    .build());
+        }
+        return content.stream()
+                .collect(Collectors.toMap(SimpleDto::getId, Function.identity()));
+    }
 
-        Map<SimpleDto, List<PayrollAllowanceLineResponse>> groupedMap = responses.stream()
-                .collect(Collectors.groupingBy(PayrollAllowanceLineResponse::getGroupAllowance));
+    private Map<Long, SimpleAllowanceDto> buildAllowanceMapFromLines(Set<Long> allowanceIds) {
+        if (allowanceIds.isEmpty()) return Collections.emptyMap();
+        List<AllowanceEntity> allowanceEntities = allowanceRepository.findAllById(allowanceIds);
+
+        Set<Long> currencyIds = new HashSet<>();
+        for (var allowance : allowanceEntities) {
+            if (allowance.getCurrencyId() != null) {
+                currencyIds.add(allowance.getCurrencyId());
+            }
+        }
+        Map<Long, CurrencyDto> currencyMap = clientHelper.buildCurrencyMap(currencyIds);
+        List<SimpleAllowanceDto> content = new ArrayList<>();
+
+        for (AllowanceEntity allowance : allowanceEntities) {
+            List<String> includeTypes = allowance.getIncludeType() == null ? List.of() : convertUtils.convert(allowance.getIncludeType());
+            content.add(SimpleAllowanceDto.builder()
+                    .id(allowance.getId())
+                    .code(allowance.getCode())
+                    .includeTypes(includeTypes)
+                    .currency(currencyMap.get(allowance.getCurrencyId()))
+                    .build());
+        }
+        return content.stream()
+                .collect(Collectors.toMap(SimpleAllowanceDto::getId, Function.identity()));
+    }
+
+    private List<PayrollAllowanceLineDto> mapToGroupedDtos(List<AllowanceLineDto> allowanceLineDtos) {
+        if (allowanceLineDtos == null || allowanceLineDtos.isEmpty()) return Collections.emptyList();
+
+        Map<SimpleDto, List<AllowanceLineDto>> groupedMap = allowanceLineDtos.stream()
+                .collect(Collectors.groupingBy(AllowanceLineDto::getGroupAllowance));
 
         return groupedMap.entrySet().stream()
                 .map(entry -> {
                     SimpleDto group = entry.getKey();
-                    List<AllowanceLineDto> allowanceLines = entry.getValue().stream()
-                            .map(response -> AllowanceLineDto.builder()
-                                    .id(response.getId())
-                                    .allowance(response.getAllowance())
-                                    .amountItem(response.getAmountItem())
-                                    .amount(response.getAmount())
-                                    .taxableAmount(response.getTaxableAmount())
-                                    .insuranceAmount(response.getInsuranceAmount())
-                                    .build())
-                            .toList();
+                    List<AllowanceLineDto> allowanceLines = entry.getValue();
 
                     return PayrollAllowanceLineDto.builder()
                             .groupAllowance(group)
@@ -185,23 +209,10 @@ public class PayrollAllowanceLineService {
                 .toList();
     }
 
-    private Map<Long, AllowanceDto> buildAllowanceMapFromLines(List<PayrollAllowanceLineEntity> lines) {
-        Set<Long> allowanceIds = new HashSet<>();
-        for (var line : lines) {
-            if (line.getAllowanceId() != null) {
-                allowanceIds.add(line.getAllowanceId());
-            }
-        }
-        if (allowanceIds.isEmpty()) return Collections.emptyMap();
-
-        List<AllowanceDto> content = allowanceService.getAllDetailByIds(allowanceIds);
-
-        return content.stream()
-                .collect(Collectors.toMap(AllowanceDto::getId, Function.identity()));
-    }
-
     private AllowanceEntity existsAllowance(Long id) {
+        if (Objects.isNull(id))
+            throw new BusinessException("400", translator.toLocale("error.id.not.null"));
         return allowanceRepository.findById(id)
-                .orElseThrow(() -> new BusinessException("404", "Allowance not found with id: " + id));
+                .orElseThrow(() -> new BusinessException("404", "Allowance " + translator.toLocale("error.resource.not.found") + id));
     }
 }

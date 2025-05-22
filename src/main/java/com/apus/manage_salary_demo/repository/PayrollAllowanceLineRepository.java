@@ -6,7 +6,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface PayrollAllowanceLineRepository extends JpaRepository<PayrollAllowanceLineEntity, Long> {
-    List<PayrollAllowanceLineEntity> findByPayrollId(Long payrollId);
+    List<PayrollAllowanceLineEntity> findByPayrollIdAndGroupAllowanceId(Long payrollId, Long allowanceId);
 
     void deleteByPayrollId(Long payrollId);
+
+    List<PayrollAllowanceLineEntity> findByPayrollId(Long payrollId);
 }

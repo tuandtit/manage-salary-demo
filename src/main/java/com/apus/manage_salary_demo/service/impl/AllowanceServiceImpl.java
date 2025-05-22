@@ -61,9 +61,7 @@ public class AllowanceServiceImpl implements AllowanceService {
     @Override
     @Transactional
     public BaseDto update(AllowanceDto dto) {
-        if (dto.getId() == null) {
-            throw new BusinessException("400", translator.toLocale("error.id.not.null"));
-        }
+
 
         AllowanceEntity entity = existsAllowance(dto.getId());
 
@@ -100,6 +98,7 @@ public class AllowanceServiceImpl implements AllowanceService {
     }
 
     @Override
+//    @Cacheable(value = "allowanceDtoListCache", key = "T(com.apus.manage_salary_demo.common.utils.ConvertUtils).joinLongSet(#ids)")
     public List<AllowanceDto> getAllDetailByIds(Set<Long> ids) {
         List<AllowanceEntity> allowanceEntities = allowanceRepository.findAllById(ids);
 
@@ -161,6 +160,9 @@ public class AllowanceServiceImpl implements AllowanceService {
     }
 
     private GroupAllowanceEntity existsGroupAllowance(Long id) {
+        if (id == null) {
+            throw new BusinessException("400", translator.toLocale("error.id.not.null"));
+        }
         return groupAllowanceRepository.findById(id)
                 .orElseThrow(() -> new BusinessException("404", "groupAllowance " + translator.toLocale("error.resource.not.found") + id));
     }

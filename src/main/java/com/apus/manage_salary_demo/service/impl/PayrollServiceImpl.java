@@ -2,11 +2,10 @@ package com.apus.manage_salary_demo.service.impl;
 
 import com.apus.manage_salary_demo.client.resources.dto.EmployeeDto;
 import com.apus.manage_salary_demo.common.error.BusinessException;
-import com.apus.manage_salary_demo.common.utils.ConvertUtils;
 import com.apus.manage_salary_demo.config.Translator;
 import com.apus.manage_salary_demo.dto.*;
-import com.apus.manage_salary_demo.dto.request.PayrollRequest;
 import com.apus.manage_salary_demo.dto.request.search.PayrollSearchRequest;
+import com.apus.manage_salary_demo.entity.PayrollAllowanceLineEntity;
 import com.apus.manage_salary_demo.entity.PayrollEntity;
 import com.apus.manage_salary_demo.mapper.PayrollMapper;
 import com.apus.manage_salary_demo.repository.PayrollRepository;
@@ -41,18 +40,28 @@ public class PayrollServiceImpl implements PayrollService {
     PayrollAllowanceLineService allowanceLineService;
     PayrollRewardLineService rewardLineService;
 
-    //Translator
     Translator translator;
 
     @Override
     @Transactional
-    public BaseDto create(PayrollRequest dto) {
+    public BaseDto create(PayrollDto dto) {
         PayrollEntity entity = payrollMapper.toEntity(dto);
         entity.setTotalAllowanceAmount(allowanceLineService.getTotalAllowanceAmount(dto.getAllowances()));
         PayrollEntity saved = payrollRepository.save(entity);
 
-        allowanceLineService.saveLines(saved.getId(), dto.getAllowances());
-        rewardLineService.saveLines(saved.getId(), dto.getRewards());
+        for (var line : dto.getAllowances()) {
+            Long groupAllowanceId = line.getGroupAllowance().getId();
+            if (!Objects.isNull(saved.getId()) && !Objects.isNull(groupAllowanceId))
+                allowanceLineService.createOrUpdateLines(saved.getId(), groupAllowanceId, line.getAllowanceLines());
+
+        }
+
+        for (var line : dto.getRewards()) {
+            Long groupRewardId = line.getGroupReward().getId();
+            if (!Objects.isNull(saved.getId()) && !Objects.isNull(groupRewardId))
+                rewardLineService.createOrUpdateLines(saved.getId(), groupRewardId, line.getRewardLines());
+
+        }
 
         return BaseDto.builder()
                 .id(saved.getId())
@@ -61,15 +70,26 @@ public class PayrollServiceImpl implements PayrollService {
 
     @Override
     @Transactional
-    public BaseDto update(PayrollRequest dto) {
+    public BaseDto update(PayrollDto dto) {
         var entity = existsPayrollEntity(dto.getId());
         payrollMapper.update(dto, entity);
         entity.setTotalAllowanceAmount(allowanceLineService.getTotalAllowanceAmount(dto.getAllowances()));
 
         var saved = payrollRepository.save(entity);
 
-        allowanceLineService.updateLines(dto.getId(), dto.getAllowances());
-        rewardLineService.updateLines(dto.getId(), dto.getRewards());
+        for (var line : dto.getAllowances()) {
+            Long groupAllowanceId = line.getGroupAllowance().getId();
+            if (!Objects.isNull(saved.getId()) && !Objects.isNull(groupAllowanceId))
+                allowanceLineService.createOrUpdateLines(saved.getId(), groupAllowanceId, line.getAllowanceLines());
+
+        }
+
+        for (var line : dto.getRewards()) {
+            Long groupRewardId = line.getGroupReward().getId();
+            if (!Objects.isNull(saved.getId()) && !Objects.isNull(groupRewardId))
+                rewardLineService.createOrUpdateLines(saved.getId(), groupRewardId, line.getRewardLines());
+
+        }
 
         return BaseDto.builder()
                 .id(saved.getId())
@@ -118,8 +138,7 @@ public class PayrollServiceImpl implements PayrollService {
                 employeeIds.add(entity.getEmployeeId());
             }
         }
-        String ids = ConvertUtils.joinLongSet(employeeIds);
-        Map<Long, EmployeeDto> employeeMap = buildEmployeeMap(clientHelper.getAllDetailEmployeeByIds(ids));
+        Map<Long, EmployeeDto> employeeMap = buildEmployeeMap(clientHelper.getAllDetailEmployeeByIds(employeeIds));
 
         List<PayrollDto> dtoList = new ArrayList<>();
         for (var entity : page) {
@@ -143,6 +162,8 @@ public class PayrollServiceImpl implements PayrollService {
     }
 
     private PayrollEntity existsPayrollEntity(Long id) {
+        if (id == null)
+            throw new BusinessException("404", translator.toLocale("error.id.not.null"));
         return payrollRepository.findById(id).orElseThrow(
                 () -> new BusinessException("404", "Payroll not found with id: " + id));
     }

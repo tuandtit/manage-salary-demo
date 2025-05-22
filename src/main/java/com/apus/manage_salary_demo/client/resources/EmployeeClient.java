@@ -9,6 +9,8 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.Set;
+
 @FeignClient(
         name = "employeeClient",
         url = "https://resources-service.dev.apusplatform.com",
@@ -16,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 )
 public interface EmployeeClient {
     @GetMapping("/api/v1/employee/list")
-    BaseResponse<PagingResponse<EmployeeDto>> getAllEmployeeByIds(@RequestParam String ids);
+    BaseResponse<PagingResponse<EmployeeDto>> getAllEmployeeByIds(@RequestParam Set<Long> ids);
 
     @GetMapping("/api/v1/employee")
     BaseResponse<EmployeeDto> getEmployeeById(@RequestParam Long employeeId);

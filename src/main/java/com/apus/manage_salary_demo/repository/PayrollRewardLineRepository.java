@@ -7,6 +7,7 @@ import java.util.List;
 
 public interface PayrollRewardLineRepository extends JpaRepository<PayrollRewardLineEntity, Long> {
     List<PayrollRewardLineEntity> findByPayrollId(Long payrollId);
+    List<PayrollRewardLineEntity> findByPayrollIdAndGroupRewardId(Long payrollId, Long groupRewardId);
 
     void deleteByPayrollId(Long payrollId);
 }

@@ -8,6 +8,8 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.Set;
+
 @FeignClient(
         name = "positionClient",
         url = "https://resources-service.dev.apusplatform.com",
@@ -15,5 +17,5 @@ import org.springframework.web.bind.annotation.RequestParam;
 )
 public interface PositionClient {
     @GetMapping("/api/v1/position/list")
-    BaseResponse<PagingResponse<SimpleDto>> getAllPositionByIds(@RequestParam String ids);
+    BaseResponse<PagingResponse<SimpleDto>> getAllPositionByIds(@RequestParam Set<Long> ids);
 }

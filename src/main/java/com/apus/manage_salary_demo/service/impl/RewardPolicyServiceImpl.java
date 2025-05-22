@@ -116,12 +116,11 @@ public class RewardPolicyServiceImpl implements RewardPolicyService {
 
         if (entity.getApplicableType() != null && !entity.getApplicableType().equals(ApplicableType.ALL)) {
             Set<Long> targetIds = targetService.getTargetIdsByPolicyId(entity.getId());
-            String ids = ConvertUtils.joinLongSet(targetIds);
 
             switch (entity.getApplicableType()) {
-                case DEPARTMENT -> dto.setTargets(clientHelper.getAllDepartmentByIds(ids));
-                case EMPLOYEE -> dto.setTargets(clientHelper.getAllEmployeeByIds(ids));
-                case POSITION -> dto.setTargets(clientHelper.getAllPositionByIds(ids));
+                case DEPARTMENT -> dto.setTargets(clientHelper.getAllDepartmentByIds(targetIds));
+                case EMPLOYEE -> dto.setTargets(clientHelper.getAllEmployeeByIds(targetIds));
+                case POSITION -> dto.setTargets(clientHelper.getAllPositionByIds(targetIds));
                 default -> throw new BusinessException("400", "Applicable Type not valid");
             }
         }

@@ -34,29 +34,29 @@ public class ClientServiceHelper {
     PositionClient positionClient;
     EmployeeClient employeeClient;
 
-    @Cacheable(value = "uomDtoCache", key = "#id")
+//    @Cacheable(value = "uomDtoCache", key = "#id")
     public UomDto getUomById(Long id) {
         return uomClient.getUomById(id).getData();
     }
 
-    @Cacheable(value = "currencyDtoCache", key = "#id")
+//    @Cacheable(value = "currencyDtoCache", key = "#id")
     public CurrencyDto getCurrencyById(Long id) {
         return currencyClient.getCurrencyById(id).getData();
     }
 
-    @Cacheable(value = "currencyMapCache", key = "T(com.apus.manage_salary_demo.common.utils.ConvertUtils).joinLongSet(#currencyIds)")
+//    @Cacheable(value = "currencyMapCache", key = "T(com.apus.manage_salary_demo.common.utils.ConvertUtils).joinLongSet(#currencyIds)")
     public Map<Long, CurrencyDto> buildCurrencyMap(Set<Long> currencyIds) {
         if (currencyIds == null || currencyIds.isEmpty()) return Collections.emptyMap();
 
         List<CurrencyDto> content = currencyClient
-                .getListCurrency(ConvertUtils.joinLongSet(currencyIds))
+                .getListCurrency(currencyIds)
                 .getData().getContent();
 
         return content.stream()
                 .collect(Collectors.toMap(CurrencyDto::getId, Function.identity()));
     }
 
-    @Cacheable(value = "uomMapCache", key = "T(com.apus.manage_salary_demo.common.utils.ConvertUtils).joinLongSet(#uomIds)")
+//    @Cacheable(value = "uomMapCache", key = "T(com.apus.manage_salary_demo.common.utils.ConvertUtils).joinLongSet(#uomIds)")
     public Map<Long, UomDto> buildUomMap(Set<Long> uomIds) {
         if (uomIds == null || uomIds.isEmpty()) return Collections.emptyMap();
 
@@ -69,22 +69,22 @@ public class ClientServiceHelper {
     }
 
 
-    @Cacheable(value = "departmentDtoListCache", key = "T(com.apus.manage_salary_demo.common.utils.ConvertUtils).joinLongSet(#ids)")
-    public List<ApplicableTargetDto> getAllDepartmentByIds(String ids) {
+//    @Cacheable(value = "departmentDtoListCache", key = "T(com.apus.manage_salary_demo.common.utils.ConvertUtils).joinLongSet(#ids)")
+    public List<ApplicableTargetDto> getAllDepartmentByIds(Set<Long> ids) {
         return getTargetDto(departmentClient.getAllDepartmentByIds(ids));
     }
 
-    @Cacheable(value = "positionDtoListCache", key = "T(com.apus.manage_salary_demo.common.utils.ConvertUtils).joinLongSet(#ids)")
-    public List<ApplicableTargetDto> getAllPositionByIds(String ids) {
+//    @Cacheable(value = "positionDtoListCache", key = "T(com.apus.manage_salary_demo.common.utils.ConvertUtils).joinLongSet(#ids)")
+    public List<ApplicableTargetDto> getAllPositionByIds(Set<Long> ids) {
         return getTargetDto(positionClient.getAllPositionByIds(ids));
     }
 
-    @Cacheable(value = "employeeDtoListCache", key = "T(com.apus.manage_salary_demo.common.utils.ConvertUtils).joinLongSet(#ids)")
-    public List<ApplicableTargetDto> getAllEmployeeByIds(String ids) {
+//    @Cacheable(value = "employeeDtoListCache", key = "T(com.apus.manage_salary_demo.common.utils.ConvertUtils).joinLongSet(#ids)")
+    public List<ApplicableTargetDto> getAllEmployeeByIds(Set<Long> ids) {
         return getEmployeeDto(employeeClient.getAllEmployeeByIds(ids));
     }
 
-    public List<EmployeeDto> getAllDetailEmployeeByIds(String ids) {
+    public List<EmployeeDto> getAllDetailEmployeeByIds(Set<Long> ids) {
         return employeeClient.getAllEmployeeByIds(ids).getData().getContent();
     }
 

@@ -2,7 +2,6 @@ package com.apus.manage_salary_demo.controller;
 
 import com.apus.manage_salary_demo.dto.BaseDto;
 import com.apus.manage_salary_demo.dto.PayrollDto;
-import com.apus.manage_salary_demo.dto.request.PayrollRequest;
 import com.apus.manage_salary_demo.dto.request.search.PayrollSearchRequest;
 import com.apus.manage_salary_demo.dto.response.PagingResponse;
 import com.apus.manage_salary_demo.dto.response.Response;
@@ -22,12 +21,12 @@ public class PayrollController {
     PayrollService payrollService;
 
     @PostMapping
-    public Response<BaseDto> create(@Valid @RequestBody PayrollRequest dto) {
+    public Response<BaseDto> create(@Valid @RequestBody PayrollDto dto) {
         return Response.created(payrollService.create(dto));
     }
 
     @PutMapping
-    public Response<BaseDto> update(@Valid @RequestBody PayrollRequest dto) {
+    public Response<BaseDto> update(@Valid @RequestBody PayrollDto dto) {
         return Response.ok(payrollService.update(dto));
     }
 
